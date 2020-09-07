@@ -6,7 +6,7 @@ import KonvaContext from '../context/konvacontext'
 import Structure from './Structure'
 import canvg from 'canvg'
 import { NavContainer, NavButton, Icon, StageContainer, CanvasWrapper, LeftSide, RightSide, SideMenu, SideMenuHeader, SideMenuParameters, Options, Input, AttributeSection, FormWrapper} from './styles'
-
+import CursorIcon from './styles/cursor_normal'
 
 
 function DisplayText(object, stage) {
@@ -287,7 +287,7 @@ function Stage(props) {
         const trans = stage.findOne("#"+node.id()+"_transformer")
         
         node.moveUp()
-        trans.moveUp()
+        trans && trans.moveUp()
         node.parent.draw()
 
       }
@@ -298,7 +298,9 @@ function Stage(props) {
         const node = stage.findOne("#"+selected)
         const trans = stage.findOne("#"+node.id()+"_transformer")
         node.moveDown()
-        trans.moveDown()
+
+
+        trans && trans.moveDown()
         node.parent.draw()
       }
     },[selected, stage])
@@ -310,12 +312,16 @@ function Stage(props) {
         const trans = stage.findOne("#"+node.id()+"_transformer")
         const layer = node.parent
 
-        trans.detach()
+        trans && trans.detach()
         node.destroy()
         layer.draw()
+        
+        if(store.mode === "SIGNATURE") {
+          setModeHand()
+        }
 
       }
-    },[selected, stage])
+    },[selected, stage, store.mode])
 
 
   
@@ -353,10 +359,13 @@ function Stage(props) {
         <NavContainer>
             <NavButton onClick={exportStage}><Icon type="fas fa-download" size="20px"/></NavButton>
             <div style={{margin: "0 50px"}}></div>
-            <NavButton onClick={setModeHand} isSelected={store.mode === "HAND"}><Icon type="fas fa-hand-paper" size="20px"/></NavButton>
+            <NavButton onClick={setModeHand} isSelected={store.mode === "HAND"}>
+              <CursorIcon fill={store.mode === "HAND" ? "#579aff" : "#828282"}/>
+              {/* <Icon type="fas fa-hand-paper" size="20px"/> */}
+            </NavButton>
             <NavButton onClick={setModeSignature} isSelected={store.mode === "SIGNATURE"}><Icon type="fas fa-signature" size="20px"/></NavButton>
             <NavButton  style={{width: 40, height: 40}} onClick={setModeText} isSelected={store.mode === "TEXT"}> <h3>T</h3>  </NavButton>
-            <NavButton onClick={setModeRect} isSelected={store.mode === "RECT"}><Icon type="fas fa-shapes" size="20px"/></NavButton>
+            <NavButton onClick={setModeRect} isSelected={store.mode === "RECT"}><Icon type="fas fa-vector-square" size="20px"/></NavButton>
             <div style={{margin: "0 50px"}}></div>
             <NavButton onClick={setModeImage} isSelected={store.mode === "IMAGE"}><Icon type="fas fa-images" size="20px"/></NavButton>
             <div style={{margin: "0 50px"}}></div>

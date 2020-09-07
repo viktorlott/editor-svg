@@ -4,6 +4,7 @@ import Layer from './Layer'
 import Rect from './Rect'
 import Text from './Text'
 import Image from './Image'
+import Line from './Line'
 
 function Structure(props) {
     const { className } = props
@@ -23,6 +24,9 @@ function Structure(props) {
       }
       case "Image": {
         return <Image {...props}/>
+      }
+      case "Line": {
+        return <Line {...props}/>
       }
     }
   

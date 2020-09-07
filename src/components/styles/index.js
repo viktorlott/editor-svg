@@ -10,7 +10,7 @@ export const NavContainer = styled.div`
 
 `
 
-const selected_color = "#247bff"
+const selected_color = "#579aff"
 
 export const NavButton = styled.button`
     border: 0;
@@ -40,7 +40,7 @@ export const NavButton = styled.button`
     }
 
     &:hover {
-        cursor: pointer;
+        /* cursor: pointer; */
         background: #e2e2e2;
     }
 
