@@ -132,20 +132,28 @@ function DrawPen(stage, layer, setShapes, setMode) {
 
     let isPaint = false
     let lastPointerPosition
-    let mode = 'brush'
+ 
 
 
     let lastLine;
 
     let min = { x: null, y: null }
     let max = { x: null, y: null }
+    let stop = false
 
     // now we need to bind some events
     // we need to start drawing on mousedown
     // and stop drawing on mouseup
-    stage.on('mousedown touchstart .drawpen', function () {
+    stage.on('mousedown touchstart .drawpen', function (e) {
         isPaint = true
         lastPointerPosition = stage.getPointerPosition()
+
+        if(e.target !== stage) {
+            stop = true
+            return
+        } else {
+            stop = false
+        }
 
         min.x = lastPointerPosition.x
         min.y = lastPointerPosition.y
@@ -162,7 +170,7 @@ function DrawPen(stage, layer, setShapes, setMode) {
         })
 
         lastLine.closed(false)
-        lastLine.bezier(true)
+        // lastLine.bezier(true)
         lastLine.tension(0)
         lastLine.lineCap("round")
 
@@ -174,11 +182,25 @@ function DrawPen(stage, layer, setShapes, setMode) {
 
     stage.on('mouseup touchend .drawpen', function () {
         isPaint = false
+        if(stop) {
+            return
+        }
+
+        const copy = JSON.parse(lastLine.clone().toJSON())
+
+        lastLine.destroy()
+
+        copy.attrs.draggable = true
+        copy.attrs.name = "object"
+        copy.attrs.id = Math.random().toString(36).substring(2)
+
+        setShapes(prev => [...prev, copy])
+
     })
 
     // and core function - drawing
     stage.on('mousemove touchmove .drawpen', function () {
-        if (!isPaint) {
+        if (!isPaint || stop) {
             return
         }
 
@@ -214,22 +236,22 @@ function DrawPen(stage, layer, setShapes, setMode) {
         document.body.removeEventListener("keydown", window.storeFunc)
         if (e.keyCode === 13 && !cache) {
 
-            let lines = []
-            stage.find("#drawing").forEach(el => {
+            // let lines = []
+            // stage.find("#drawing").forEach(el => {
 
 
-                const copy = JSON.parse(el.clone().toJSON())
+            //     const copy = JSON.parse(el.clone().toJSON())
 
-                el.destroy()
+            //     el.destroy()
 
-                copy.attrs.draggable = true
-                copy.attrs.name = "object"
-                copy.attrs.id = Math.random().toString(36).substring(2)
-                lines.push(copy)
-            })
+            //     copy.attrs.draggable = true
+            //     copy.attrs.name = "object"
+            //     copy.attrs.id = Math.random().toString(36).substring(2)
+            //     lines.push(copy)
+            // })
 
-            setShapes(prev => [...prev, ...lines])
-            setMode("HAND")
+            // setShapes(prev => [...prev, ...lines])
+            // setMode("HAND")
 
         }
     }
@@ -251,16 +273,6 @@ function DrawShape(props) {
     const hiddenInputRef = useRef()
     const imageFileRef = useRef()
 
-    // const selectionRectangle = useMemo(() => {
-    //     const selectionRectangle =  new Konva.Rect({
-    //         fill: 'rgba(0,0,255,0.5)',
-    //       })
-    //       layer.add(selectionRectangle)
-    //       selectionRectangle.moveToTop()
-
-    //       return selectionRectangle
-    // },[])
-    // -webkit-image-set(url(images/cursors/cursor-insert-frame.png) 1x, url(images/cursors/cursor-insert-frame@2x.png) 2x) 15 15, default
 
     useEffect(() => {
         stage.on("mouseover.cursor", e => {
@@ -434,10 +446,6 @@ function DrawShape(props) {
 
 
             setShapes(prev => [...prev, shape])
-
-
-
-
 
 
             layer.batchDraw()

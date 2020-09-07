@@ -15,6 +15,7 @@ function DisplayText(object, stage) {
       case "Rect": return "Rektangel";
       case "Text": return "Text";
       case "Image": return "Bild";
+      case "Line": return "Signatur";
       default: return null
     }
   }
@@ -315,7 +316,7 @@ function Stage(props) {
         trans && trans.detach()
         node.destroy()
         layer.draw()
-        
+
         if(store.mode === "SIGNATURE") {
           setModeHand()
         }
