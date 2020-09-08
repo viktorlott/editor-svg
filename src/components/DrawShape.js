@@ -123,7 +123,7 @@ function applyCrop(pos, img, layer) {
 
 const createDataURL = file => window.URL.createObjectURL(file)
 
-function smoothLine(points, skip=4) {
+function smoothLine(points, skip=2) {
     const arr = points
             
     const newArr = [];
@@ -207,7 +207,7 @@ function DrawPen(stage, layer, setShapes, setMode) {
         })
 
         lastLine.closed(false)
-        lastLine.bezier(true)
+        // lastLine.bezier(true)
 
         lastLine.lineCap("round")
 
@@ -218,10 +218,10 @@ function DrawPen(stage, layer, setShapes, setMode) {
     // will it be better to listen move/end events on the window?
 
     stage.on('mouseup touchend .drawpen', function () {
-        isPaint = false
-        if(stop) {
+        if(stop && isPaint) {
             return
         }
+        isPaint = false
 
         const pos = stage.getPointerPosition()
 
@@ -256,11 +256,11 @@ function DrawPen(stage, layer, setShapes, setMode) {
 
 
         setShapes(prev => [...prev, copy])
-
-
-
     })
 
+
+
+ 
     // and core function - drawing
     stage.on('mousemove touchmove .drawpen', function () {
         if (!isPaint || stop) {
@@ -342,6 +342,8 @@ function DrawShape(props) {
             stage.off("mousemove touchmove .drawpen")
 
             stage.off("mouseup touchend .drawpen")
+
+            // stage.off("mouseout .drawpen")
         }
     }, [store.mode])
 
