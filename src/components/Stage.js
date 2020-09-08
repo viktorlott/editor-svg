@@ -219,12 +219,19 @@ function Stage(props) {
             let shape = null
             if(type === "Image") {
               shape = document.createElementNS(svgNS, "foreignObject")
+            } else if(type === "Line") {
+              shape = document.createElementNS(svgNS, "polyline")
+// <polyline points="0,100 50,25 50,75 100,0" />
             } else {
               shape = document.createElementNS(svgNS, type.toLowerCase())
             }
             
             for(let attr in attrs) {
-              shape.setAttribute(camel(attr), attrs[attr])  
+              if(attr === "points") {
+                shape.setAttribute(camel(attr), attrs[attr].join(","))  
+              } else {
+                shape.setAttribute(camel(attr), attrs[attr])  
+              }
             }
 
 
@@ -255,6 +262,11 @@ function Stage(props) {
               shape.setAttribute("dominant-baseline", "hanging")  
               shape.setAttribute("font-family", object.fontFamily())  
               shape.textContent = object.text()
+            }
+
+            if(type === "Line") {
+              shape.setAttribute("stroke", "black")  
+              shape.setAttribute("fill", "none")  
             }
             
             svg.appendChild(shape);

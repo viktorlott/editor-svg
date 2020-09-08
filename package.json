@@ -8,6 +8,7 @@
     "@testing-library/user-event": "^7.1.2",
     "antd": "^4.6.1",
     "canvg": "^3.0.6",
+    "chaikin-smooth": "^1.0.4",
     "konva": "^7.0.6",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",

@@ -3,6 +3,7 @@ import Konva from 'konva'
 import Structure from './Structure'
 import KonvaContext from '../context/konvacontext'
 import cursor from './styles/cursor-add-shape.png'
+import smooth from 'chaikin-smooth'
 
 function getRandomColor() {
     let letters = '0123456789ABCDEF'
@@ -122,10 +123,43 @@ function applyCrop(pos, img, layer) {
 
 const createDataURL = file => window.URL.createObjectURL(file)
 
-// const el = stage.find("#drawing").reduce((el, curr) => {
-//     if(!el) return curr
-//     return el.points(el.points().concat(curr.points()))
-// })
+function smoothLine(points, skip=4) {
+    const arr = points
+            
+    const newArr = [];
+    let prevX, prevY
+    while(arr.length) {
+        let [x, y] = arr.splice(0,2)
+
+        if(!prevX && !prevY) {
+            !prevX && (prevX = x)
+            !prevY && (prevY = y)
+            newArr.push([x, y])
+        } else if(prevX === x && prevY === y) {
+
+        } else if(prevX !== x && prevY !== y) {
+            newArr.push([x, y])
+        } else {
+            newArr.push([x, y])
+        }
+
+        prevX = x
+        prevY = y
+
+    }
+
+    
+
+    return smooth(newArr.reduce((acc, curr, i) => {
+        if(i === 0 || i % skip === 0) {
+            acc.push(curr)
+        }
+        return acc
+    },[])).flat()
+
+
+}
+
 
 function DrawPen(stage, layer, setShapes, setMode) {
     // then we are going to draw into special canvas element
@@ -166,12 +200,15 @@ function DrawPen(stage, layer, setShapes, setMode) {
             strokeWidth: 3,
             globalCompositeOperation: 'source-over',
             points: [lastPointerPosition.x, lastPointerPosition.y],
-            id: "drawing"
+            id: "drawing",
+            // hitStrokeWidth: 4
+
+            // lineJoin: "round"
         })
 
         lastLine.closed(false)
-        // lastLine.bezier(true)
-        lastLine.tension(0)
+        lastLine.bezier(true)
+
         lastLine.lineCap("round")
 
         layer.add(lastLine)
@@ -186,6 +223,29 @@ function DrawPen(stage, layer, setShapes, setMode) {
             return
         }
 
+        const pos = stage.getPointerPosition()
+
+        if(lastLine.points().length < 3) {
+            lastLine.destroy()
+            return
+        } else {
+
+        }
+
+        // const arr = lastLine.points()
+            
+        // const newArr = [];
+        // while(arr.length) newArr.push(arr.splice(0,2));
+        console.log(lastLine.points())
+
+        const lines = smoothLine(lastLine.points())
+
+        console.log(lines)
+
+        lastLine.points(lines)
+
+        lastLine.draw()
+
         const copy = JSON.parse(lastLine.clone().toJSON())
 
         lastLine.destroy()
@@ -194,7 +254,10 @@ function DrawPen(stage, layer, setShapes, setMode) {
         copy.attrs.name = "object"
         copy.attrs.id = Math.random().toString(36).substring(2)
 
+
         setShapes(prev => [...prev, copy])
+
+
 
     })
 
@@ -220,43 +283,17 @@ function DrawPen(stage, layer, setShapes, setMode) {
         if (max.x < localPos.x) max.x = localPos.x
         if (max.y < localPos.y) max.y = localPos.y
 
-
-        let newPoints = lastLine.points().concat([localPos.x, localPos.y]);
+       
+        let newPoints = lastLine.points().concat([localPos.x, localPos.y])
         lastLine.points(newPoints);
         layer.batchDraw();
 
         lastPointerPosition = pos
+
+        
+
     })
 
-
-
-    window.storeFunc && document.body.removeEventListener("keydown", window.storeFunc)
-    let cache = null
-    window.storeFunc = e => {
-        document.body.removeEventListener("keydown", window.storeFunc)
-        if (e.keyCode === 13 && !cache) {
-
-            // let lines = []
-            // stage.find("#drawing").forEach(el => {
-
-
-            //     const copy = JSON.parse(el.clone().toJSON())
-
-            //     el.destroy()
-
-            //     copy.attrs.draggable = true
-            //     copy.attrs.name = "object"
-            //     copy.attrs.id = Math.random().toString(36).substring(2)
-            //     lines.push(copy)
-            // })
-
-            // setShapes(prev => [...prev, ...lines])
-            // setMode("HAND")
-
-        }
-    }
-
-    document.body.addEventListener("keydown", window.storeFunc)
 
 
 }

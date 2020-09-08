@@ -2985,6 +2985,13 @@ caseless@~0.12.0:
   resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.12.0.tgz#1b681c21ff84033c826543090689420d187151dc"
   integrity sha1-G2gcIf+EAzyCZUMJBolCDRhxUdw=
 
+chaikin-smooth@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/chaikin-smooth/-/chaikin-smooth-1.0.4.tgz#1cbd7683d97b5d8c75c8e9217e50ca7840510ead"
+  integrity sha1-HL12g9l7XYx1yOkhflDKeEBRDq0=
+  dependencies:
+    vec2-copy "^1.0.0"
+
 chalk@2.4.2, chalk@^2.0.0, chalk@^2.0.1, chalk@^2.1.0, chalk@^2.4.1, chalk@^2.4.2:
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-2.4.2.tgz#cd42541677a54333cf541a49108c1432b44c9424"
@@ -10050,6 +10057,11 @@ slice-ansi@^2.1.0:
     astral-regex "^1.0.0"
     is-fullwidth-code-point "^2.0.0"
 
+smooth-polyline@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/smooth-polyline/-/smooth-polyline-1.0.8.tgz#010f790a65aae8f29a7282f2039f915268c94da2"
+  integrity sha512-g/yo3jbAPYuhC50iMIhfE+FPLV/nP63ek9mNKUFWbZ9pUbpKHwAyr+Jda8khpPz0jwVvXXuFHm6KCVLh6bImxw==
+
 snapdragon-node@^2.0.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/snapdragon-node/-/snapdragon-node-2.1.1.tgz#6c175f86ff14bdb0724563e8f3c1b021a286853b"
@@ -11011,6 +11023,11 @@ vary@~1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/vary/-/vary-1.1.2.tgz#2299f02c6ded30d4a5961b0b9f74524a18f634fc"
   integrity sha1-IpnwLG3tMNSllhsLn3RSShj2NPw=
+
+vec2-copy@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/vec2-copy/-/vec2-copy-1.0.0.tgz#c6eec1d8dad54625194e5f71f8433b62d2f20a7a"
+  integrity sha1-xu7B2NrVRiUZTl9x+EM7YtLyCno=
 
 vendors@^1.0.0:
   version "1.0.4"
