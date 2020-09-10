@@ -65,7 +65,7 @@ function TextFormAttributes(props) {
 
   const updateAttrs = useCallback(() => {
     setAttrs({...selectedObject.attrs, fontFamily: selectedObject.fontFamily(), fill: selectedObject.fill() })
-  }, [selectedObject])
+  }, [selectedObject, selectedObject.id()])
 
   const onChangeFontFamily = (e) => {
 
@@ -221,7 +221,7 @@ function Stage(props) {
               shape = document.createElementNS(svgNS, "foreignObject")
             } else if(type === "Line") {
               shape = document.createElementNS(svgNS, "polyline")
-// <polyline points="0,100 50,25 50,75 100,0" />
+
             } else {
               shape = document.createElementNS(svgNS, type.toLowerCase())
             }
@@ -404,7 +404,7 @@ function Stage(props) {
               </h2>
             </SideMenuHeader>
             <SideMenuParameters>
-               {selectedObject && selectedObject.className === "Text" && <TextFormAttributes selectedObject={selectedObject} stage={stage}/>}
+               {selectedObject && selectedObject.className === "Text" && <TextFormAttributes selectedObject={selectedObject} key={selectedObject.id()} stage={stage}/>}
                {selectedObject && selectedObject.className === "Rect" && <RectFormAttributes selectedObject={selectedObject} stage={stage}/>}
                {selectedObject && (
                 <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 50, flexFlow: "row"}}>
