@@ -9,7 +9,6 @@ import Structure from './Structure'
 const createDataURL = file => window.URL.createObjectURL(file)
 
 
-
 function getCrop(image, size, clipPosition = 'center-middle') {
   const width = size.width;
   const height = size.height;
@@ -30,6 +29,7 @@ function getCrop(image, size, clipPosition = 'center-middle') {
 
   let x = 0;
   let y = 0;
+
   if (clipPosition === 'left-top') {
     x = 0;
     y = 0;

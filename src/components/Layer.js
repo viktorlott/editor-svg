@@ -77,7 +77,9 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
   layer.find('.relative-guid-line').destroy()
   let offsetEvent = 40
   let minDelta = 4
-  let lineColor = '#ff4bc8'
+  let lineColor = '#ff26a9'
+  let wallSize = 2
+  let alignOffset = 5
   Object.values(relatives).forEach((relative) => {
 
     
@@ -86,7 +88,7 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
       const isEventBottom = ((relative.y + relative.height) - offsetEvent <= nodeRect.y && (relative.y + relative.height) + offsetEvent >= nodeRect.y)
 
       const objectRightSideX = relative.x + relative.width + 2
-      const centerLineY = isEvenTop ? relative.y + 5 : isEventBottom ? relative.y + relative.height - 5 : (relative.y + relative.height / 2) + 5 
+      const centerLineY = isEvenTop ? relative.y + alignOffset : isEventBottom ? relative.y + relative.height - alignOffset : (relative.y + relative.height / 2) + alignOffset 
       const nodeLeftSideX = nodeRect.x - 2
       const delta = Math.abs(relative.x + relative.width - nodeRect.x)
 
@@ -99,14 +101,14 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
         })
   
         let wallLeft = new Konva.Line({
-          points: [objectRightSideX, centerLineY + 3, objectRightSideX, centerLineY - 3],
+          points: [objectRightSideX, centerLineY + wallSize, objectRightSideX, centerLineY - wallSize],
           stroke: lineColor,
           strokeWidth: 1,
           name: 'relative-guid-line',
         })
   
         let wallRight = new Konva.Line({
-          points: [nodeLeftSideX , centerLineY + 3, nodeLeftSideX, centerLineY - 3 ],
+          points: [nodeLeftSideX , centerLineY + wallSize, nodeLeftSideX, centerLineY - wallSize ],
           stroke: lineColor,
           strokeWidth: 1,
           name: 'relative-guid-line',
@@ -121,7 +123,7 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
         })
   
         text.x((objectRightSideX) + (line.width() / 2) - text.width() / 2)
-        text.y(centerLineY + 5)
+        text.y(centerLineY + alignOffset)
   
         layer.add(text)
         layer.add(line)
@@ -133,7 +135,7 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
       const isEvenTop = ((nodeRect.y + nodeRect.height) - offsetEvent <= relative.y && (nodeRect.y + nodeRect.height) + offsetEvent >= relative.y) 
       const isEventBottom = ((relative.y + relative.height) - offsetEvent <= nodeRect.y && (relative.y + relative.height) + offsetEvent >= nodeRect.y)
 
-      const centerLineY = isEvenTop ? relative.y + 5 : isEventBottom ? relative.y + relative.height - 5 : (relative.y + relative.height / 2) + 5 
+      const centerLineY = isEvenTop ? relative.y + alignOffset : isEventBottom ? relative.y + relative.height - alignOffset : (relative.y + relative.height / 2) + alignOffset 
       const objectLeftSideX = relative.x - 2
       const nodeRightSideX = nodeRect.x + nodeRect.width + 2
 
@@ -148,14 +150,14 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
       })
 
       let wallLeft = new Konva.Line({
-        points: [objectLeftSideX, centerLineY + 3, objectLeftSideX, centerLineY - 3],
+        points: [objectLeftSideX, centerLineY + wallSize, objectLeftSideX, centerLineY - wallSize],
         stroke: lineColor,
         strokeWidth: 1,
         name: 'relative-guid-line',
       })
 
       let wallRight = new Konva.Line({
-        points: [nodeRightSideX , centerLineY + 3, nodeRightSideX, centerLineY - 3 ],
+        points: [nodeRightSideX , centerLineY + wallSize, nodeRightSideX, centerLineY - wallSize ],
         stroke: lineColor,
         strokeWidth: 1,
         name: 'relative-guid-line',
@@ -170,7 +172,7 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
       })
 
       text.x((nodeRightSideX) + (line.width() / 2) - text.width() / 2)
-      text.y(centerLineY + 5)
+      text.y(centerLineY + alignOffset)
 
       layer.add(text)
       layer.add(line)
@@ -184,7 +186,7 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
       const isEvenRight = ((nodeRect.x + nodeRect.width) - offsetEvent <= relative.x && (nodeRect.x + nodeRect.width) + offsetEvent >= relative.x) 
       const isEventLeft = ((relative.x + relative.width) - offsetEvent <= nodeRect.x && (relative.x + relative.width) + offsetEvent >= nodeRect.x)
 
-      const centerLineX = isEvenRight ? relative.x + 5 : isEventLeft ? relative.x + relative.width - 5 : (relative.x + relative.width / 2) + 5 
+      const centerLineX = isEvenRight ? relative.x + alignOffset : isEventLeft ? relative.x + relative.width - alignOffset : (relative.x + relative.width / 2) + alignOffset 
       const objectLeftSideY = relative.y + relative.height + 2 
 
       const nodeRightSideY = nodeRect.y  - 2
@@ -199,14 +201,14 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
         })
   
         let wallLeft = new Konva.Line({
-          points: [centerLineX + 3, objectLeftSideY, centerLineX - 3, objectLeftSideY ],
+          points: [centerLineX + wallSize, objectLeftSideY, centerLineX - wallSize, objectLeftSideY ],
           stroke: lineColor,
           strokeWidth: 1,
           name: 'relative-guid-line',
         })
   
         let wallRight = new Konva.Line({
-          points: [centerLineX + 3, nodeRightSideY, centerLineX - 3, nodeRightSideY ],
+          points: [centerLineX + wallSize, nodeRightSideY, centerLineX - wallSize, nodeRightSideY ],
           stroke: lineColor,
           strokeWidth: 1,
           name: 'relative-guid-line',
@@ -220,7 +222,7 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
           text: Math.round(delta)
         })
   
-        text.x(centerLineX + 5)
+        text.x(centerLineX + alignOffset)
         text.y((objectLeftSideY) + (line.height() / 2) - text.height() / 2)
   
         layer.add(text)
@@ -234,7 +236,7 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
       const isEvenRight = ((nodeRect.x + nodeRect.width) - offsetEvent <= relative.x && (nodeRect.x + nodeRect.width) + offsetEvent >= relative.x) 
       const isEventLeft = ((relative.x + relative.width) - offsetEvent <= nodeRect.x && (relative.x + relative.width) + offsetEvent >= nodeRect.x)
 
-      const centerLineX = isEvenRight ? relative.x + 5 : isEventLeft ? relative.x + relative.width - 5 : (relative.x + relative.width / 2) + 5 
+      const centerLineX = isEvenRight ? relative.x + alignOffset : isEventLeft ? relative.x + relative.width - alignOffset : (relative.x + relative.width / 2) + alignOffset 
       const objectLeftSideY = relative.y - 2 
 
       const nodeRightSideY = nodeRect.y + nodeRect.height + 2
@@ -251,14 +253,14 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
         })
   
         let wallLeft = new Konva.Line({
-          points: [centerLineX + 3, objectLeftSideY, centerLineX - 3, objectLeftSideY ],
+          points: [centerLineX + wallSize, objectLeftSideY, centerLineX - wallSize, objectLeftSideY ],
           stroke: lineColor,
           strokeWidth: 1,
           name: 'relative-guid-line',
         })
   
         let wallRight = new Konva.Line({
-          points: [centerLineX + 3, nodeRightSideY, centerLineX - 3, nodeRightSideY ],
+          points: [centerLineX + wallSize, nodeRightSideY, centerLineX - wallSize, nodeRightSideY ],
           stroke: lineColor,
           strokeWidth: 1,
           name: 'relative-guid-line',
@@ -272,7 +274,7 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
           text: Math.round(delta)
         })
   
-        text.x(centerLineX + 5)
+        text.x(centerLineX + alignOffset)
         text.y((nodeRightSideY) + (line.height() / 2) - text.height() / 2)
   
         layer.add(text)
@@ -419,6 +421,7 @@ function getGuides(lineGuideStops, itemBounds) {
       other: minV.other
     })
   }
+  
   if (minH) {
     guides.push({
       lineGuide: minH.lineGuide,
@@ -438,7 +441,7 @@ function drawGuides(guides, layer) {
     if (lg.orientation === 'H') {
       let line = new Konva.Line({
         points: [-6000, lg.lineGuide, 6000, lg.lineGuide],
-        stroke: '#4AE3FF',
+        stroke: '#0099ff',
         strokeWidth: 1,
         name: 'guid-line',
         // dash: [4, 6],
@@ -448,7 +451,7 @@ function drawGuides(guides, layer) {
     } else if (lg.orientation === 'V') {
       let line = new Konva.Line({
         points: [lg.lineGuide, -6000, lg.lineGuide, 6000],
-        stroke: '#4AE3FF',
+        stroke: '#0099ff',
         strokeWidth: 1,
         name: 'guid-line',
         // dash: [4, 6],

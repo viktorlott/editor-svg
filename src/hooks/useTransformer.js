@@ -170,20 +170,18 @@ function useTransformer(shape, layer, stage, attrs = {}) {
     const transform = useMemo(() => new Konva.Transformer({
         resizeEnabled: false,
         rotateEnabled: false,
-        anchorCornerRadius: 5,
-        anchorSize: 7,
+        anchorCornerRadius: 1,
+        anchorSize: 5,
         rotationSnaps: [0, 90, 180, 270],
         borderStroke: "transparent",
         borderStrokeWidth: 1,
         rotateAnchorOffset: 30,
-
         ...attrs,
         id: shape.id() + "_transformer"
     }), [])
 
     const toggleResizer = useCallback((val) => {
         transform.setAttr("resizeEnabled", val)
-        // transform.setAttr("rotateEnabled", val)
         transform.setAttr("borderStroke", val ? "#0099ff" : "transparent")
         layer.draw()
     }, [transform])
@@ -216,9 +214,6 @@ function useTransformer(shape, layer, stage, attrs = {}) {
 
         let tempGuides = null
 
-        shape.on("transformstart", e => {
-            // oldShapeSize = e.target.getClientRect()
-        })
 
         shape.on("transform", e => {
             if (e.target.className === "Transformer") {
@@ -251,13 +246,9 @@ function useTransformer(shape, layer, stage, attrs = {}) {
         })
     
 
-        // const getDragDir = getDragDirection()
-
 
         transform.boundBoxFunc((oldBox, newBox) => {
             // now force object position
-
-            // const dir = getDragDir(oldBox, newBox)
 
             if (!tempGuides) return newBox
             let tempBox = { ...newBox }
