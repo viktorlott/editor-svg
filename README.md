@@ -11,6 +11,6 @@ This creates an svg to your clipboard.
 
 #### Demo
 
-![Alt Text](https://github.com/nexriz/NeuralNetwork/blob/master/demo.gif)
+![Alt Text](https://github.com/nexriz/editor/blob/master/demo.gif)
 
 
