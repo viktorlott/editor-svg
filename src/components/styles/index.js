@@ -144,6 +144,7 @@ export const Options = styled.div`
   max-width: 100%;
   border-radius: 5px;
   margin: 5px;
+
   transition: background-color 0.2s;
 
   &:hover {
@@ -153,6 +154,7 @@ export const Options = styled.div`
   >select {
 
     font-size: 1rem;
+    font-size: 14px;
     font-weight: 500;
     max-width: 100%;
     width:100%;
@@ -191,6 +193,7 @@ export const Input = styled.input`
   width: ${props => props.width ? props.width : "auto"};
   ${props => props.height ? `height: ${props.height};` : ""}
   margin: 5px;
+  
   float: left;
   /* max-width: 100%; */
   border-radius: 5px;
@@ -203,7 +206,14 @@ export const Input = styled.input`
   &::-webkit-inner-spin-button {
     border-radius: 5px;
   }
+
+  &::-webkit-color-swatch {
+    border-color: transparent;
+  }
+
+
   font-size: 1rem;
+  font-size: 14px;
   font-weight: 500;
   max-width: 100%;
   color: #989898;
@@ -249,6 +259,14 @@ export const FormWrapper = styled.div`
     justify-content: center;
     align-items: center;
     flex-flow: column;
+
+    & > input[type="color"] {
+      padding: 0;
+      border-radius: 98px;
+      overflow: hidden;
+      height: 30px;
+      background: none;
+    }
 `
 
 

@@ -16,7 +16,12 @@ function Rect(props) {
 
     
   
-    useEffect(() => {
+    useEffect(() => {     
+      
+      
+      rect.on("transform", () => {
+        // console.log(rect.attrs)
+      })
       
       return () => {
         layer.remove(rect)

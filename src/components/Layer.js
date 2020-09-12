@@ -22,7 +22,7 @@ function getRelativeDistances(node, stage) {
     const objectRect = object.getClientRect()
     if(Konva.Util.haveIntersection(nodeRect, objectRect)) return distances
 
-    let margin = 5
+    let margin = 3
  
     if(nodeRect.x >= objectRect.x + objectRect.width && (
       (nodeRect.y >= objectRect.y ) && (nodeRect.y  <= objectRect.y + objectRect.height + margin) || 
@@ -71,15 +71,19 @@ function getRelativeDistances(node, stage) {
   return relatives
 }
 // #ff4bc8
-function drawRelativeGuideLines(relatives, node, layer, lg) {
+function drawRelativeGuideLines(relatives, node, layer, guides, lg) {
   const nodeRect = node.getClientRect()
   
   layer.find('.relative-guid-line').destroy()
-  let offsetEvent = 40
+  let offsetEvent = 0
   let minDelta = 4
   let lineColor = '#ff26a9'
-  let wallSize = 2
-  let alignOffset = 5
+  let wallSize = 0
+  let alignOffset = 0
+  let textOffset = 4
+  let LineSpace = 0
+
+
   Object.values(relatives).forEach((relative) => {
 
     
@@ -87,9 +91,12 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
       const isEvenTop = ((nodeRect.y + nodeRect.height) - offsetEvent <= relative.y && (nodeRect.y + nodeRect.height) + offsetEvent >= relative.y) 
       const isEventBottom = ((relative.y + relative.height) - offsetEvent <= nodeRect.y && (relative.y + relative.height) + offsetEvent >= nodeRect.y)
 
-      const objectRightSideX = relative.x + relative.width + 2
-      const centerLineY = isEvenTop ? relative.y + alignOffset : isEventBottom ? relative.y + relative.height - alignOffset : (relative.y + relative.height / 2) + alignOffset 
-      const nodeLeftSideX = nodeRect.x - 2
+      if(!guides.some(e => e.orientation === "H")) return
+
+      const objectRightSideX = relative.x + relative.width + LineSpace
+      const centerLineY = lg.lineGuide
+      // isEvenTop ? relative.y + alignOffset : isEventBottom ? relative.y + relative.height - alignOffset : (relative.y + relative.height / 2) + alignOffset 
+      const nodeLeftSideX = nodeRect.x - LineSpace
       const delta = Math.abs(relative.x + relative.width - nodeRect.x)
 
       if(delta > minDelta) {
@@ -123,7 +130,7 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
         })
   
         text.x((objectRightSideX) + (line.width() / 2) - text.width() / 2)
-        text.y(centerLineY + alignOffset)
+        text.y(centerLineY + alignOffset + textOffset)
   
         layer.add(text)
         layer.add(line)
@@ -135,9 +142,12 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
       const isEvenTop = ((nodeRect.y + nodeRect.height) - offsetEvent <= relative.y && (nodeRect.y + nodeRect.height) + offsetEvent >= relative.y) 
       const isEventBottom = ((relative.y + relative.height) - offsetEvent <= nodeRect.y && (relative.y + relative.height) + offsetEvent >= nodeRect.y)
 
-      const centerLineY = isEvenTop ? relative.y + alignOffset : isEventBottom ? relative.y + relative.height - alignOffset : (relative.y + relative.height / 2) + alignOffset 
-      const objectLeftSideX = relative.x - 2
-      const nodeRightSideX = nodeRect.x + nodeRect.width + 2
+      if(!guides.some(e => e.orientation === "H")) return
+
+      const centerLineY = lg.lineGuide
+      // isEvenTop ? relative.y + alignOffset : isEventBottom ? relative.y + relative.height - alignOffset : (relative.y + relative.height / 2) + alignOffset 
+      const objectLeftSideX = relative.x - LineSpace
+      const nodeRightSideX = nodeRect.x + nodeRect.width + LineSpace
 
       const delta = Math.abs(nodeRect.x + nodeRect.width - relative.x)
 
@@ -172,7 +182,7 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
       })
 
       text.x((nodeRightSideX) + (line.width() / 2) - text.width() / 2)
-      text.y(centerLineY + alignOffset)
+      text.y(centerLineY + alignOffset + textOffset)
 
       layer.add(text)
       layer.add(line)
@@ -186,10 +196,15 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
       const isEvenRight = ((nodeRect.x + nodeRect.width) - offsetEvent <= relative.x && (nodeRect.x + nodeRect.width) + offsetEvent >= relative.x) 
       const isEventLeft = ((relative.x + relative.width) - offsetEvent <= nodeRect.x && (relative.x + relative.width) + offsetEvent >= nodeRect.x)
 
-      const centerLineX = isEvenRight ? relative.x + alignOffset : isEventLeft ? relative.x + relative.width - alignOffset : (relative.x + relative.width / 2) + alignOffset 
-      const objectLeftSideY = relative.y + relative.height + 2 
+      if(!guides.some(e => e.orientation === "V")) return
 
-      const nodeRightSideY = nodeRect.y  - 2
+      const centerLineX = guides.find(e => e.orientation === "V").lineGuide
+      // lg.lineGuide + lg.offset
+      // isEvenRight ? relative.x + alignOffset : isEventLeft ? relative.x + relative.width - alignOffset : (relative.x + relative.width / 2) + alignOffset 
+      // lg.snap === "start" ? nodeRect.x : lg.snap === "center" ? nodeRect.x + (nodeRect.width / 2) : lg.snap === "end" ? nodeRect.x + nodeRect.width : lg.lineGuide
+      const objectLeftSideY = relative.y + relative.height + LineSpace
+
+      const nodeRightSideY = nodeRect.y - LineSpace
 
       const delta = Math.abs(relative.y + relative.height - nodeRect.y)
       if(delta > minDelta) {
@@ -222,7 +237,7 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
           text: Math.round(delta)
         })
   
-        text.x(centerLineX + alignOffset)
+        text.x(centerLineX + alignOffset + textOffset)
         text.y((objectLeftSideY) + (line.height() / 2) - text.height() / 2)
   
         layer.add(text)
@@ -236,10 +251,14 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
       const isEvenRight = ((nodeRect.x + nodeRect.width) - offsetEvent <= relative.x && (nodeRect.x + nodeRect.width) + offsetEvent >= relative.x) 
       const isEventLeft = ((relative.x + relative.width) - offsetEvent <= nodeRect.x && (relative.x + relative.width) + offsetEvent >= nodeRect.x)
 
-      const centerLineX = isEvenRight ? relative.x + alignOffset : isEventLeft ? relative.x + relative.width - alignOffset : (relative.x + relative.width / 2) + alignOffset 
-      const objectLeftSideY = relative.y - 2 
+      if(!guides.some(e => e.orientation === "V")) return
 
-      const nodeRightSideY = nodeRect.y + nodeRect.height + 2
+      const centerLineX = guides.find(e => e.orientation === "V").lineGuide
+      // lg.lineGuide + lg.offset
+      // isEvenRight ? relative.x + alignOffset : isEventLeft ? relative.x + relative.width - alignOffset : (relative.x + relative.width / 2) + alignOffset 
+      const objectLeftSideY = relative.y - LineSpace
+
+      const nodeRightSideY = nodeRect.y + nodeRect.height + LineSpace
 
       const delta = Math.abs(nodeRect.y + nodeRect.height - relative.y )
 
@@ -274,7 +293,7 @@ function drawRelativeGuideLines(relatives, node, layer, lg) {
           text: Math.round(delta)
         })
   
-        text.x(centerLineX + alignOffset)
+        text.x(centerLineX + alignOffset + textOffset)
         text.y((nodeRightSideY) + (line.height() / 2) - text.height() / 2)
   
         layer.add(text)
@@ -375,14 +394,15 @@ function getGuides(lineGuideStops, itemBounds) {
       let diff = Math.abs(lineGuide - itemBound.guide)
       // if the distance between guild line and object snap point is close we can consider this for snapping
 
-      if (diff < 3) {
+      if (diff < 5) {
         resultV.push({
           lineGuide: lineGuide,
           diff: diff,
           snap: itemBound.snap,
           offset: itemBound.offset,
           box: itemBound.box,
-          other: lineGuideStops
+          other: lineGuideStops,
+          itemBound
 
         })
       }
@@ -392,14 +412,16 @@ function getGuides(lineGuideStops, itemBounds) {
   lineGuideStops.horizontal.forEach((lineGuide) => {
     itemBounds.horizontal.forEach((itemBound) => {
       let diff = Math.abs(lineGuide - itemBound.guide)
-      if (diff < 3) {
+
+      if (diff < 5) {
         resultH.push({
           lineGuide: lineGuide,
           diff: diff,
           snap: itemBound.snap,
           offset: itemBound.offset,
           box: itemBound.box,
-          other: lineGuideStops
+          other: lineGuideStops,
+          itemBound
         })
       }
     })
@@ -407,10 +429,18 @@ function getGuides(lineGuideStops, itemBounds) {
 
   let guides = []
 
-  // find closest snap
-  let minV = resultV.sort((a, b) => a.diff - b.diff)[0]
-  let minH = resultH.sort((a, b) => a.diff - b.diff)[0]
 
+  // find closest snap
+
+  let v = resultV.sort((a, b) => a.diff - b.diff)
+  let minV = v[0]
+  
+  let h = resultH.sort((a, b) => a.diff - b.diff)
+  let minH = h[0]
+  
+
+
+  
   if (minV) {
     guides.push({
       lineGuide: minV.lineGuide,
@@ -418,7 +448,8 @@ function getGuides(lineGuideStops, itemBounds) {
       orientation: 'V',
       snap: minV.snap,
       box: minV.box,
-      other: minV.other
+      other: minV.other,
+      itemBound: minV.itemBound
     })
   }
   
@@ -429,14 +460,18 @@ function getGuides(lineGuideStops, itemBounds) {
       orientation: 'H',
       snap: minH.snap,
       box: minH.box,
-      other: minH.other
+      other: minH.other,
+      itemBound: minH.itemBound
     })
   }
+
+
   return guides
 }
 
 // #ff4bc8
 function drawGuides(guides, layer) {
+
   guides.forEach((lg) => {
     if (lg.orientation === 'H') {
       let line = new Konva.Line({
@@ -444,17 +479,18 @@ function drawGuides(guides, layer) {
         stroke: '#0099ff',
         strokeWidth: 1,
         name: 'guid-line',
-        // dash: [4, 6],
+        dash: [4, 6],
       })
       layer.add(line)
       layer.batchDraw()
     } else if (lg.orientation === 'V') {
+
       let line = new Konva.Line({
         points: [lg.lineGuide, -6000, lg.lineGuide, 6000],
         stroke: '#0099ff',
         strokeWidth: 1,
         name: 'guid-line',
-        // dash: [4, 6],
+        dash: [4, 6],
       })
       layer.add(line)
       layer.batchDraw()
@@ -467,10 +503,6 @@ function Layer(props) {
   const { stage } = props
 
   const layer = useMemo(() => new Konva.Layer(), [])
-
-
-
-
 
 
   useEffect(() => {
@@ -488,10 +520,7 @@ function Layer(props) {
         layer.find('.relative-guid-line').destroy()
         layer.find('.guid-line').destroy()
 
-        
-
         let relatives = getRelativeDistances(e.target, stage)
-
 
         // find possible snapping lines
         let lineGuideStops = getLineGuideStops(e.target, stage)
@@ -502,14 +531,13 @@ function Layer(props) {
         let guides = getGuides(lineGuideStops, itemBounds)
 
 
-
         // do nothing of no snapping
         if (!guides.length) {
           return
         }
 
 
-        drawGuides(guides, layer)
+        
         
 
 
@@ -521,12 +549,14 @@ function Layer(props) {
               switch (lg.orientation) {
                 case 'V': {
                   e.target.x(lg.lineGuide + lg.offset)
-                  drawRelativeGuideLines(relatives, e.target, layer, lg)
+                  drawGuides(guides, layer)
+                  drawRelativeGuideLines(relatives, e.target, layer, guides, lg )
                   break
                 }
                 case 'H': {
                   e.target.y(lg.lineGuide + lg.offset)
-                  drawRelativeGuideLines(relatives, e.target, layer, lg)
+                  drawGuides(guides, layer)
+                  drawRelativeGuideLines(relatives, e.target, layer, guides, lg )
                   break
                 }
               }
@@ -536,12 +566,14 @@ function Layer(props) {
               switch (lg.orientation) {
                 case 'V': {
                   e.target.x(lg.lineGuide + lg.offset)
-                  drawRelativeGuideLines(relatives, e.target, layer, lg)
+                  drawGuides(guides, layer)
+                  drawRelativeGuideLines(relatives, e.target, layer, guides, lg )
                   break
                 }
                 case 'H': {
                   e.target.y(lg.lineGuide + lg.offset)
-                  drawRelativeGuideLines(relatives, e.target, layer, lg)
+                  drawGuides(guides, layer)
+                  drawRelativeGuideLines(relatives, e.target, layer, guides, lg )
                   break
                 }
               }
@@ -551,12 +583,14 @@ function Layer(props) {
               switch (lg.orientation) {
                 case 'V': {
                   e.target.x(lg.lineGuide + lg.offset)
-                  drawRelativeGuideLines(relatives, e.target, layer, lg)
+                  drawGuides(guides, layer)
+                  drawRelativeGuideLines(relatives, e.target, layer, guides, lg )
                   break
                 }
                 case 'H': {
                   e.target.y(lg.lineGuide + lg.offset)
-                  drawRelativeGuideLines(relatives, e.target, layer, lg)
+                  drawGuides(guides, layer)
+                  drawRelativeGuideLines(relatives, e.target, layer, guides, lg )
                   break
                 }
               }

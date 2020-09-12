@@ -77,7 +77,7 @@ function TextFormAttributes(props) {
   }
 
   const onChangeFontSize = (e) => {
-    selectedObject.fontSize(e.target.value)
+    selectedObject.fontSize(+e.target.value)
     if(selectedObject.parent) {
       selectedObject.parent.draw()
     }
@@ -116,8 +116,10 @@ function TextFormAttributes(props) {
   )
 }
 
+
+
 function getRectAttrs(selectedObject) {
-  return {...selectedObject.attrs, width: selectedObject.width(), height: selectedObject.height(), fill: selectedObject.fill() }
+  return {...selectedObject.attrs, width: selectedObject.width(), height: selectedObject.height(), fill: selectedObject.fill(), stroke: selectedObject.stroke(), strokeWidth: selectedObject.strokeWidth(), cornerRadius: selectedObject.cornerRadius() }
 }
 
 function RectFormAttributes(props) {
@@ -126,6 +128,7 @@ function RectFormAttributes(props) {
 
 
   useEffect(() => {
+
     setAttrs(getRectAttrs(selectedObject))
   },[selectedObject.id()])
   
@@ -139,17 +142,135 @@ function RectFormAttributes(props) {
     updateAttrs()
   }
 
-  const optionsDataFontFamilies = [{ value: "Arial", label: "Arial"}, { value: "Helvetica", label: "Helvetica"}, { value: "sans-serif", label: "Sans-serif"}, { value: "Times", label: "Times"}]
+  const onChangeRectBorderColor = (e) => {
+    selectedObject.stroke(e.target.value)
+    selectedObject.parent.draw()
+    updateAttrs()
+  }
 
-  const optionsDataFontStyles = [{ value: "normal", label: "Normal"}, { value: "bold", label: "Bold"}, { value: "italic", label: "Italic"}]
+  const onChangeRectBorderWidth = (e) => {
+    if(e.target.value < 0) return
+    const transformer = stage.findOne("#"+selectedObject.id()+"_transformer")
+    selectedObject.strokeWidth(+e.target.value)
+    transformer.padding(selectedObject.strokeWidth() / 2)
+    transformer.update()
+    selectedObject.parent.draw()
+    updateAttrs()
+  }
+
+  const onChangeRectBorderCornerRadius = (e) => {
+    if(e.target.value < 0) return
+    const transformer = stage.findOne("#"+selectedObject.id()+"_transformer")
+    selectedObject.cornerRadius(+e.target.value)
+    transformer.update()
+    selectedObject.parent.draw()
+    updateAttrs()
+  }
 
   return (
     <AttributeSection>
-          <InputForm onChange={onChangeRectColor} value={attrs.fill} width={"150px"} height={"40px"} label={"Färg"} type="color"/>
+        <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 50, flexFlow: "row"}}>
+          <InputForm onChange={onChangeRectColor} value={attrs.fill} width={"75px"} height={"40px"} label={"Fyll"} type="color"/>
+          <InputForm onChange={onChangeRectBorderColor} value={attrs.stroke} width={"75px"} height={"40px"} label={"Kant"} type="color"/>
+        </AttributeSection>
+        <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 0, flexFlow: "row"}}>
+          <InputForm onChange={onChangeRectBorderWidth} value={attrs.strokeWidth} width={"75px"} height={"40px"} label={"Kant"} type="number"/>
+          <InputForm onChange={onChangeRectBorderCornerRadius} value={attrs.cornerRadius} width={"75px"} height={"40px"} label={"Radius"} type="number"/>
+        </AttributeSection>
     </AttributeSection>
   )
 }
 
+function getShapeSizeAttrs(selectedObject) {
+  return {...selectedObject.attrs, width: selectedObject.width(), height: selectedObject.height()}
+}
+
+
+function getShapeSizeAttrsScale(selectedObject) {
+  return {...selectedObject.attrs, width: selectedObject.width() * selectedObject.scaleX(), height: selectedObject.height() * selectedObject.scaleY()}
+}
+
+function ShapeSizeAttributes(props) {
+  const { stage, selectedObject } = props
+  const [attrs, setAttrs] = useState(() => selectedObject && getShapeSizeAttrs(selectedObject))
+
+
+  useEffect(() => {
+    const transformer = stage.findOne("#"+selectedObject.id()+"_transformer")
+    setAttrs(getShapeSizeAttrsScale(selectedObject, transformer))
+
+    const id = selectedObject.id()
+    const shape = selectedObject
+    const updateFunc = () => {
+      setAttrs(getShapeSizeAttrsScale(selectedObject))
+
+      shape.setAttrs({
+        width: Math.max(shape.width() * shape.scaleX(), 5),
+        height: Math.max(shape.height() * shape.scaleY(), 5),
+        scaleX: 1,
+        scaleY: 1,
+      });
+    }
+
+    shape.on("transform."+id, updateFunc)
+    // shape.on("transform."+id,updateFunc)
+    shape.dragBoundFunc(updateFunc)
+
+    return () => {
+      shape.off("transform."+id)
+      shape.dragBoundFunc(null)
+    }
+  },[selectedObject.id()])
+  
+  const updateAttrs = useCallback(() => {
+    setAttrs(getShapeSizeAttrs(selectedObject))
+  }, [selectedObject.id()])
+  
+  const onChangeWidth = useCallback((e) => {
+    if(e.target.value < 3) return
+    selectedObject.width(+e.target.value)
+    selectedObject.scaleY(1)
+    selectedObject.scaleX(1)
+    selectedObject.parent.draw()
+    updateAttrs()
+  },[selectedObject.id()])
+
+  const onChangeHeight = useCallback((e) => {
+    if(e.target.value < 3) return
+    selectedObject.height(+e.target.value)
+    selectedObject.scaleY(1)
+    selectedObject.scaleX(1)
+    selectedObject.parent.draw()
+    updateAttrs()
+  },[selectedObject.id()])
+
+  const onChangeX = useCallback((e) => {
+    if(e.target.value < 3) return
+    selectedObject.x(+e.target.value)
+    selectedObject.parent.draw()
+    updateAttrs()
+  },[selectedObject.id()])
+
+  const onChangeY = useCallback((e) => {
+    if(e.target.value < 3) return
+    selectedObject.y(+e.target.value)
+    selectedObject.parent.draw()
+    updateAttrs()
+  },[selectedObject.id()])
+
+  return (
+    <AttributeSection>
+        <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 0, flexFlow: "row"}}>
+          <InputForm onChange={onChangeWidth} value={Math.round(attrs.width)} width={"75px"} height={"40px"} style={{fontSize: "14px"}} label={"Bredd"} type="number"/>
+          <InputForm onChange={onChangeHeight} value={Math.round(attrs.height)} width={"75px"} height={"40px"} style={{fontSize: "14px"}} label={"Höjd"} type="number"/>
+        </AttributeSection>
+        <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 0, flexFlow: "row"}}>
+          <InputForm onChange={onChangeX} value={Math.round(attrs.x)} width={"75px"} height={"40px"} style={{fontSize: "14px"}} label={"X"} type="number"/>
+          <InputForm onChange={onChangeY} value={Math.round(attrs.y)} width={"75px"} height={"40px"} style={{fontSize: "14px"}} label={"Y"} type="number"/>
+        </AttributeSection>
+    </AttributeSection>
+  )
+}
 
 
 function getDataUrl(img) {
@@ -188,7 +309,7 @@ function Stage(props) {
       })
 
       window.document.addEventListener("click", e => {
-        
+        console.log(document.querySelector("#rightside").contains(e.target))
         if(!ref.contains(e.target) && !document.querySelector("#rightside").contains(e.target)) {
           setSelected(null)
         }
@@ -404,14 +525,13 @@ function Stage(props) {
               </h2>
             </SideMenuHeader>
             <SideMenuParameters>
+               {selectedObject && <ShapeSizeAttributes selectedObject={selectedObject} stage={stage}/>}
                {selectedObject && selectedObject.className === "Text" && <TextFormAttributes selectedObject={selectedObject} key={selectedObject.id()} stage={stage}/>}
                {selectedObject && selectedObject.className === "Rect" && <RectFormAttributes selectedObject={selectedObject} stage={stage}/>}
                {selectedObject && (
                 <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 50, flexFlow: "row"}}>
-
                         <NavButton onClick={moveUp} style={{padding: 7, width: 50}}><Icon type="fas fa-angle-up" size="20px"/></NavButton>
                         <NavButton onClick={moveDown} style={{padding: 7, width: 50}}><Icon type="fas fa-angle-down" size="20px"/></NavButton>
-
                 </AttributeSection>
                )}
                {selectedObject && (

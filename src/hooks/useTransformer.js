@@ -170,12 +170,17 @@ function useTransformer(shape, layer, stage, attrs = {}) {
     const transform = useMemo(() => new Konva.Transformer({
         resizeEnabled: false,
         rotateEnabled: false,
-        anchorCornerRadius: 1,
-        anchorSize: 5,
+        anchorCornerRadius: 7,
+        anchorStrokeWidth: 1,
+        anchorSize: 7,
         rotationSnaps: [0, 90, 180, 270],
         borderStroke: "transparent",
         borderStrokeWidth: 1,
         rotateAnchorOffset: 30,
+        ignoreStroke: true,
+        strokeScaleEnabled: true,
+        // keepRatio: true,
+        // padding: shape.strokeWidth() / 2,
         ...attrs,
         id: shape.id() + "_transformer"
     }), [])
@@ -186,13 +191,18 @@ function useTransformer(shape, layer, stage, attrs = {}) {
         layer.draw()
     }, [transform])
 
+
     useEffect(() => {
         layer.add(shape)
         layer.add(transform)
         transform.nodes([shape])
 
+        if(shape.className === "Rect") {
+            transform.padding(shape.strokeWidth() / 2)
+        }
 
 
+     
         shape.on('mouseover', function (e) {
             if (!transform.getAttr("resizeEnabled")) {
                 transform.setAttr("borderStroke", "#0099ff")
@@ -214,8 +224,16 @@ function useTransformer(shape, layer, stage, attrs = {}) {
 
         let tempGuides = null
 
-
+        shape.on("transformstart", () => {
+            transform.resizeEnabled(false)
+        })
+        shape.on("transformend", () => {
+            transform.resizeEnabled(true)
+        })
         shape.on("transform", e => {
+            transform.padding(shape.strokeWidth() / 2)
+
+
             if (e.target.className === "Transformer") {
                 return
             }
@@ -345,6 +363,25 @@ function useTransformer(shape, layer, stage, attrs = {}) {
                 toggleResizer(false)
             }
         }
+
+
+        shape.on("dragmove.transform_resize", () => {
+            if(shape.id() === store.selected) {
+                transform.resizeEnabled(false)
+            }
+        })
+
+        shape.on("dragend.transform_resize", () => {
+            if(shape.id() === store.selected) {
+                transform.resizeEnabled(true)
+            }
+        })
+
+        return () => {
+            shape.off("dragmove.transform_resize")
+            shape.off("dragend.transform_resize")
+        }
+
 
     }, [shape, store, hasChangedSelected])
 

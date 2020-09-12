@@ -218,9 +218,11 @@ function DrawPen(stage, layer, setShapes, setMode) {
     // will it be better to listen move/end events on the window?
 
     stage.on('mouseup touchend .drawpen', function () {
-        if(stop && isPaint) {
-            return
+
+        if(stop || !isPaint) {
+            return      
         }
+
         isPaint = false
 
         const pos = stage.getPointerPosition()
@@ -232,30 +234,28 @@ function DrawPen(stage, layer, setShapes, setMode) {
 
         }
 
-        // const arr = lastLine.points()
-            
-        // const newArr = [];
-        // while(arr.length) newArr.push(arr.splice(0,2));
-        console.log(lastLine.points())
 
         const lines = smoothLine(lastLine.points())
 
-        console.log(lines)
 
         lastLine.points(lines)
+        try {
+            lastLine.draw()
+            
+            const copy = JSON.parse(lastLine.clone().toJSON())
 
-        lastLine.draw()
+            lastLine.destroy()
 
-        const copy = JSON.parse(lastLine.clone().toJSON())
-
-        lastLine.destroy()
-
-        copy.attrs.draggable = true
-        copy.attrs.name = "object"
-        copy.attrs.id = Math.random().toString(36).substring(2)
+            copy.attrs.draggable = true
+            copy.attrs.name = "object"
+            copy.attrs.id = Math.random().toString(36).substring(2)
 
 
-        setShapes(prev => [...prev, copy])
+            setShapes(prev => [...prev, copy])
+        } catch(err) {
+            console.log()
+        }
+
     })
 
 
@@ -289,10 +289,61 @@ function DrawPen(stage, layer, setShapes, setMode) {
         layer.batchDraw();
 
         lastPointerPosition = pos
-
-        
-
     })
+
+    const container = stage.container()
+
+    container.removeEventListener("mouseleave", window.mouseLeaveHandle)
+
+    window.mouseLeaveHandle = () => {
+        
+        if(!isPaint) {
+            return
+        }
+
+        isPaint = false
+        stop = false
+        
+        const pos = stage.getPointerPosition()
+
+        if(lastLine.points().length < 3) {
+            lastLine.destroy()
+            return
+        } else {
+
+        }
+
+        // const arr = lastLine.points()
+            
+        // const newArr = [];
+        // while(arr.length) newArr.push(arr.splice(0,2));
+        console.log(lastLine.points())
+
+        const lines = smoothLine(lastLine.points())
+
+        console.log(lines)
+
+        lastLine.points(lines)
+
+        try {
+            lastLine.draw()
+            
+            const copy = JSON.parse(lastLine.clone().toJSON())
+
+            lastLine.destroy()
+
+            copy.attrs.draggable = true
+            copy.attrs.name = "object"
+            copy.attrs.id = Math.random().toString(36).substring(2)
+
+
+            setShapes(prev => [...prev, copy])
+        } catch(err) {
+            console.log()
+        }
+    }
+
+    container.addEventListener("mouseleave",  window.mouseLeaveHandle)
 
 
 
@@ -372,8 +423,9 @@ function DrawShape(props) {
             strokeWidth: 1,
             fill: 'transparent'
         } : {
-                fill: 'black'
-            }
+                fill: '#ffffff',
+                stroke: "#000000"
+        }
 
         //  console.log("store", store.mode)
         const selectionRectangle = new Konva.Rect({
@@ -445,9 +497,6 @@ function DrawShape(props) {
             if (store.mode === "TEXT") {
                 const text = new Konva.Text({ width: selectionRectangle.width(), x: selectionRectangle.x(), y: selectionRectangle.y(), fontSize: 24, fill: "black", enabledAnchors: ['middle-left', 'middle-right'] })
                 text.fontSize(24)
-                // text.text("Skriv här..")
-
-
                 shape = JSON.parse(text.toJSON())
             } else if (store.mode === "IMAGE") {
 
