@@ -18,6 +18,7 @@ function getLineGuideStops(skipShape, stage) {
         }
 
         let box = guideItem.getClientRect()
+
         // and we can snap to all edges of shapes
         vertical.push([box.x, box.x + box.width, box.x + box.width / 2])
         horizontal.push([box.y, box.y + box.height, box.y + box.height / 2])
@@ -205,6 +206,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
      
         shape.on('mouseover', function (e) {
             if (!transform.getAttr("resizeEnabled")) {
+                // transform.setAttr("borderStroke", "#0099ff")
                 transform.setAttr("borderStroke", "#0099ff")
                 transform.setZIndex(layer.children.length)
                 layer.draw()
@@ -267,7 +269,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
 
         transform.boundBoxFunc((oldBox, newBox) => {
             // now force object position
-
+            console.log(newBox)
             if (!tempGuides) return newBox
             let tempBox = { ...newBox }
 
@@ -333,6 +335,12 @@ function useTransformer(shape, layer, stage, attrs = {}) {
                     }
                 }
             })
+
+            // for(let key in tempBox) {
+            //     if(typeof tempBox[key] === "number") {
+            //         tempBox[key] = Math.round(tempBox[key])
+            //     }
+            // }
 
             return tempBox
 

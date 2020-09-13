@@ -8,39 +8,93 @@ import DrawShape from './DrawShape'
 
 function smallestDistance(a, b) {
   try {
-    return  a.delta < b.delta ? a : b
+    return  a.delta <= b.delta ? a : b
   } catch(err) {
     console.log(a, b, err)
     return a
   }
-
 }
+
+function getBoundingBoxes(node) {
+  const rect = node
+  const x = rect.x
+  const y = rect.y
+  const xWidth = x + rect.width
+  const yHeight = y + rect.height
+   
+  return { 
+    ...rect,
+    x, 
+    y, 
+    xWidth, 
+    yHeight
+  }
+}
+
+function isOnLeftSide(dbox, obox, margin) {
+  if((dbox.x >= obox.xWidth) && (
+      (dbox.y >= obox.y) &&
+      (dbox.y <= obox.yHeight + margin) || 
+      (obox.y - margin <= dbox.yHeight && obox.yHeight >= dbox.yHeight) ||
+      (obox.y >= dbox.y && obox.yHeight <= dbox.yHeight)
+    )) {
+      return true
+  } else {
+    return false
+  }
+}
+
+function isOnRightSide(dbox, obox, margin) {
+  if((dbox.x <= obox.xWidth) && (
+      (dbox.y <= obox.y) &&
+      (dbox.y >= obox.yHeight + margin) || 
+      (obox.y - margin >= dbox.yHeight && obox.yHeight <= dbox.yHeight) ||
+      (obox.y <= dbox.y && obox.yHeight >= dbox.yHeight)
+    )) {
+      return true
+  } else {
+    return false
+  }
+}
+
+// nodeRect.x >= objectRect.x + objectRect.width && (
+//   (nodeRect.y >= objectRect.y ) && (nodeRect.y  <= objectRect.y + objectRect.height + margin) || 
+//   (objectRect.y - margin <= (nodeRect.y + nodeRect.height) && (objectRect.y + objectRect.height) >= (nodeRect.y + nodeRect.height)) ||
+
+//   (objectRect.y >= nodeRect.y && (objectRect.y + objectRect.height) <= (nodeRect.y + nodeRect.height))
+//   )
+
+
+
 
 function getRelativeDistances(node, stage) {
   const relatives = stage.find('.object').reduce((distances, object, i, objects) => {
     const nodeRect = node.getClientRect()
     const objectRect = object.getClientRect()
-    if(Konva.Util.haveIntersection(nodeRect, objectRect)) return distances
+    // if(Konva.Util.haveIntersection(nodeRect, objectRect)) return distances
 
     let margin = 3
  
-    if(nodeRect.x >= objectRect.x + objectRect.width && (
-      (nodeRect.y >= objectRect.y ) && (nodeRect.y  <= objectRect.y + objectRect.height + margin) || 
-      (objectRect.y - margin <= (nodeRect.y + nodeRect.height) && (objectRect.y + objectRect.height) >= (nodeRect.y + nodeRect.height)) ||
-      (objectRect.y >= nodeRect.y && (objectRect.y + objectRect.height) <= (nodeRect.y + nodeRect.height))
-      )) {
+    if(isOnLeftSide(getBoundingBoxes(nodeRect),getBoundingBoxes(objectRect), 3)) {
       const item = { side: "l", ...objectRect, delta: Math.abs(nodeRect.x + nodeRect.width - objectRect.x) }
+
       if(!distances["l"]) {
         distances["l"] = item
       } else {
         distances["l"] = smallestDistance(distances["l"], item)
       }
 
-    } else if(nodeRect.x + nodeRect.width <= objectRect.x && (((nodeRect.y >= objectRect.y) && (nodeRect.y  <= objectRect.y + objectRect.height + margin)) || (objectRect.y - margin <= (nodeRect.y + nodeRect.height) && (objectRect.y + objectRect.height) >= (nodeRect.y + nodeRect.height) || (objectRect.y >= nodeRect.y && (objectRect.y + objectRect.height) <= (nodeRect.y + nodeRect.height))))) {
+    } else if(nodeRect.x + nodeRect.width <= objectRect.x + margin && 
+      (((nodeRect.y >= objectRect.y) && (nodeRect.y  <= objectRect.y + objectRect.height + margin)) 
+        || (objectRect.y - margin <= (nodeRect.y + nodeRect.height) 
+            && (objectRect.y + objectRect.height) >= (nodeRect.y + nodeRect.height) 
+            || (objectRect.y >= nodeRect.y && (objectRect.y + objectRect.height) <= (nodeRect.y + nodeRect.height))))) {
       const item = { side: "r", ...objectRect, delta: Math.abs(nodeRect.x + nodeRect.width - objectRect.x)}
+
       if(!distances["r"]) {
         distances["r"] = item
       } else {
+
         distances["r"] = smallestDistance(distances["r"], item)
       }
     } else if(nodeRect.y >= objectRect.y + objectRect.height && (((nodeRect.x >= objectRect.x) && (nodeRect.x <= objectRect.x + objectRect.width + margin )) || (objectRect.x - margin <= (nodeRect.x + nodeRect.width ) && (objectRect.x + objectRect.width) >= (nodeRect.x + nodeRect.width)) || (objectRect.x >= nodeRect.x && (objectRect.x + objectRect.width) <= (nodeRect.x + nodeRect.width)))) {
@@ -76,7 +130,7 @@ function drawRelativeGuideLines(relatives, node, layer, guides, lg) {
   
   layer.find('.relative-guid-line').destroy()
   let offsetEvent = 0
-  let minDelta = 4
+  let minDelta = 5
   let lineColor = '#ff26a9'
   let wallSize = 0
   let alignOffset = 0
@@ -435,7 +489,7 @@ function getGuides(lineGuideStops, itemBounds) {
   let v = resultV.sort((a, b) => a.diff - b.diff)
   let minV = v[0]
   
-  let h = resultH.sort((a, b) => a.diff - b.diff)
+  let h = resultH.sort((a, b) => a.diff - b.diff)   
   let minH = h[0]
   
 
@@ -479,7 +533,7 @@ function drawGuides(guides, layer) {
         stroke: '#0099ff',
         strokeWidth: 1,
         name: 'guid-line',
-        dash: [4, 6],
+        // dash: [4, 6],
       })
       layer.add(line)
       layer.batchDraw()
@@ -490,7 +544,7 @@ function drawGuides(guides, layer) {
         stroke: '#0099ff',
         strokeWidth: 1,
         name: 'guid-line',
-        dash: [4, 6],
+        // dash: [4, 6],
       })
       layer.add(line)
       layer.batchDraw()
@@ -515,6 +569,13 @@ function Layer(props) {
           return
         }
 
+        e.target.x(Math.round(e.target.x()))
+        e.target.y(Math.round(e.target.y()))
+        e.target.width(Math.round(e.target.width()))
+        e.target.height(Math.round(e.target.height()))
+
+        layer.draw()
+
 
         // clear all previous lines on the screen
         layer.find('.relative-guid-line').destroy()
@@ -537,11 +598,13 @@ function Layer(props) {
         }
 
 
-        
+
         
 
 
         // now force object position
+
+    
 
         guides.forEach((lg) => {
           switch (lg.snap) {
@@ -595,6 +658,10 @@ function Layer(props) {
                 }
               }
               break
+            }
+            default: {
+              console.log("e.target", e.target.attrs)
+             
             }
           }
         })
