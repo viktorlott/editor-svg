@@ -16,30 +16,7 @@ function getRandomColor() {
 
 
 const HiddenInput = forwardRef((props, ref) => <input type="file" ref={ref} style={{ display: "none" }} {...props} />)
-//   function ImportImage(props) {
-//     const { stage } = props
-//     const hiddenInputRef = useRef()
 
-//     const onImageUpload = useCallback((e) => {
-//       const { files } = e.target
-//       if(files && files.length) {
-//         image.src = window.URL.createObjectURL(files[0])
-//       }
-
-//     }, [stage]) 
-
-//     const uploadImage = useCallback(() => {
-//         hiddenInputRef.current.click()
-//     },[stage])
-
-
-//     return (
-//       <NavButton onClick={uploadImage}>
-//         <Icon type="fas fa-images" size="20px"/>
-//         <HiddenInput ref={hiddenInputRef} onChange={onImageUpload} accept={"image/png, image/jpeg"} />
-//       </NavButton>
-//     )
-//   }
 
 
 function getCrop(image, size, clipPosition = 'center-middle') {
@@ -424,7 +401,8 @@ function DrawShape(props) {
             fill: 'transparent'
         } : {
                 fill: '#ffffff',
-                stroke: "#000000"
+                stroke: "#000000",
+                strokeWidth: 1
         }
 
         //  console.log("store", store.mode)

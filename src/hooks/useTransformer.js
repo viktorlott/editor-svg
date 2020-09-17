@@ -179,13 +179,14 @@ function useTransformer(shape, layer, stage, attrs = {}) {
         borderStrokeWidth: 1,
         rotateAnchorOffset: 30,
         ignoreStroke: true,
-        strokeScaleEnabled: true,
+        strokeScaleEnabled: false,
+        
         // keepRatio: true,
         // padding: shape.strokeWidth() / 2,
         ...attrs,
         id: shape.id() + "_transformer"
     }), [])
-
+    // #2ca7ff
     const toggleResizer = useCallback((val) => {
         transform.setAttr("resizeEnabled", val)
         transform.setAttr("borderStroke", val ? "#0099ff" : "transparent")
@@ -194,6 +195,8 @@ function useTransformer(shape, layer, stage, attrs = {}) {
 
 
     useEffect(() => {
+        shape.dragDistance(3)
+        console.log(shape.attrs)
         layer.add(shape)
         layer.add(transform)
         transform.nodes([shape])
@@ -235,6 +238,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
         shape.on("transform", e => {
             transform.padding(shape.strokeWidth() / 2)
 
+            shape.strokeWidth(shape.strokeWidth())
 
             if (e.target.className === "Transformer") {
                 return
@@ -263,13 +267,21 @@ function useTransformer(shape, layer, stage, attrs = {}) {
 
             tempGuides = guides.filter(lg => lg.diff !== 0)
 
+
+                shape.setAttrs({
+                    width: Math.max(shape.width() * shape.scaleX(), 5),
+                    height: Math.max(shape.height() * shape.scaleY(), 5),
+                    scaleX: 1,
+                    scaleY: 1,
+                  });
+
         })
     
 
 
         transform.boundBoxFunc((oldBox, newBox) => {
             // now force object position
-            console.log(newBox)
+
             if (!tempGuides) return newBox
             let tempBox = { ...newBox }
 

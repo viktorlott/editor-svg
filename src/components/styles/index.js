@@ -64,7 +64,7 @@ export const StageContainer = styled.div`
     display: grid;
     justify-content: center;
     grid-template-columns: 1fr 794px 1fr;
-    grid-template-rows: 70px 150px calc(100vh - 50px - 150px);
+    grid-template-rows: 70px auto calc(100vh - 50px - 150px);
 `
 
 export const CanvasWrapper = styled.div`
@@ -74,11 +74,12 @@ export const CanvasWrapper = styled.div`
      grid-row: 2/3;
 
      border-radius: 2px;
-     background-color: white;
+     /* background-color: white; */
 
      & canvas {
         border-radius: 2px;
         /* border: 2px solid #e6e6e6; */
+        background-color: white!important;
         border: 2px solid #dadada!important;
         box-shadow: 0px 0px 6px 1px rgba(0,0,0,0.05);
      }

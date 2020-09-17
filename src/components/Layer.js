@@ -32,7 +32,23 @@ function getBoundingBoxes(node) {
 }
 
 function isOnLeftSide(dbox, obox, margin) {
-  if((dbox.x >= obox.xWidth) && (
+
+ /** 
+   *0,0____________________________________X
+   * |                
+   * |                
+   * |                               
+   * |               
+   * |           ____         ____   
+   * |          |obox|       |dbox|
+   * |          |____|       |____|
+   * |               
+   * |               
+   * |               
+   * |               
+   * Y
+   */
+  if(dbox.x >= obox.xWidth - margin && (
       (dbox.y >= obox.y) &&
       (dbox.y <= obox.yHeight + margin) || 
       (obox.y - margin <= dbox.yHeight && obox.yHeight >= dbox.yHeight) ||
@@ -45,11 +61,28 @@ function isOnLeftSide(dbox, obox, margin) {
 }
 
 function isOnRightSide(dbox, obox, margin) {
-  if((dbox.x <= obox.xWidth) && (
-      (dbox.y <= obox.y) &&
-      (dbox.y >= obox.yHeight + margin) || 
-      (obox.y - margin >= dbox.yHeight && obox.yHeight <= dbox.yHeight) ||
-      (obox.y <= dbox.y && obox.yHeight >= dbox.yHeight)
+
+ /** 
+   *0,0____________________________________X
+   * |
+   * |                       |
+   * |                       |
+   * |           ____        |____   
+   * |          |dbox|       |obox|
+   * |          |____|       |____|
+   * |                       |
+   * |                       |  
+   * |                       |  
+   * |                       | dbox.xWidth <= obox.x + (margin is used to contract the Y line that detects objects and classifies them as "objects to the right side of dragging object")
+   * |                  
+   * |                  
+   * Y
+   */
+  if(dbox.xWidth <= obox.x + margin && (
+      (dbox.y >= obox.y) &&
+      (dbox.y <= obox.yHeight + margin) || 
+      (obox.y - margin <= dbox.yHeight && obox.yHeight >= dbox.yHeight) ||
+      (obox.y >= dbox.y && obox.yHeight <= dbox.yHeight)
     )) {
       return true
   } else {
@@ -57,47 +90,96 @@ function isOnRightSide(dbox, obox, margin) {
   }
 }
 
-// nodeRect.x >= objectRect.x + objectRect.width && (
-//   (nodeRect.y >= objectRect.y ) && (nodeRect.y  <= objectRect.y + objectRect.height + margin) || 
-//   (objectRect.y - margin <= (nodeRect.y + nodeRect.height) && (objectRect.y + objectRect.height) >= (nodeRect.y + nodeRect.height)) ||
+function isOnTopSide(dbox, obox, margin) {
 
-//   (objectRect.y >= nodeRect.y && (objectRect.y + objectRect.height) <= (nodeRect.y + nodeRect.height))
-//   )
+ /**
+   *0,0____________________________________X
+   * |
+   * |           ____
+   * |          |obox|
+   * | _ _ _ _ _|____|_ _ _ _ _ dbox.y >= obox.yHeight - (margin is used to contract the Y line that detects objects and classifies them as "objects above dragging object")
+   * |       
+   * |
+   * |           ____
+   * |          |dbox|
+   * |          |____|
+   * |
+   * |
+   * |
+   * Y
+   */
+  if(dbox.y >= obox.yHeight - margin && (
+    (dbox.x >= obox.x && dbox.x <= obox.xWidth + margin) || 
+    (obox.x - margin <= dbox.xWidth && obox.xWidth >= dbox.xWidth) || 
+    (obox.x >= dbox.x && obox.xWidth <= dbox.xWidth)
+  )) {
+      return true
+  } else {
+    return false
+  }
+}
+
+function isOnBottomSide(dbox, obox, margin) {
+
+
+ /**
+  *  
+   *0,0____________________________________X
+   * |
+   * |           ____
+   * |          |dbox|
+   * |          |____|
+   * |       
+   * |
+   * | _ _ _ _ _ ____ _ _ _ _ _ dbox.yHeight <= obox.y + (margin is used to extend the Y line that detects objects and classifies them as "objects below dragging object")
+   * |          |obox|
+   * |          |____|
+   * |
+   * |
+   * |
+   * Y
+   */
+  if(dbox.yHeight <= obox.y + margin && (
+    (dbox.x >= obox.x && dbox.x <= obox.xWidth + margin) || 
+    (obox.x - margin <= dbox.xWidth && obox.xWidth >= dbox.xWidth) || 
+    (obox.x >= dbox.x && obox.xWidth <= dbox.xWidth)
+  )) {
+    return true
+  } else {
+    return false
+  }
+}
 
 
 
 
-function getRelativeDistances(node, stage) {
+
+function getRelativeDistances(node, stage, guides) {
   const relatives = stage.find('.object').reduce((distances, object, i, objects) => {
     const nodeRect = node.getClientRect()
     const objectRect = object.getClientRect()
-    // if(Konva.Util.haveIntersection(nodeRect, objectRect)) return distances
 
-    let margin = 3
+    let margin = 5 
  
-    if(isOnLeftSide(getBoundingBoxes(nodeRect),getBoundingBoxes(objectRect), 3)) {
+    if(isOnLeftSide(getBoundingBoxes(nodeRect), getBoundingBoxes(objectRect), margin)) {
       const item = { side: "l", ...objectRect, delta: Math.abs(nodeRect.x + nodeRect.width - objectRect.x) }
-
       if(!distances["l"]) {
         distances["l"] = item
       } else {
+
         distances["l"] = smallestDistance(distances["l"], item)
       }
 
-    } else if(nodeRect.x + nodeRect.width <= objectRect.x + margin && 
-      (((nodeRect.y >= objectRect.y) && (nodeRect.y  <= objectRect.y + objectRect.height + margin)) 
-        || (objectRect.y - margin <= (nodeRect.y + nodeRect.height) 
-            && (objectRect.y + objectRect.height) >= (nodeRect.y + nodeRect.height) 
-            || (objectRect.y >= nodeRect.y && (objectRect.y + objectRect.height) <= (nodeRect.y + nodeRect.height))))) {
+    } else if(isOnRightSide(getBoundingBoxes(nodeRect), getBoundingBoxes(objectRect), margin)) {
       const item = { side: "r", ...objectRect, delta: Math.abs(nodeRect.x + nodeRect.width - objectRect.x)}
+      
 
       if(!distances["r"]) {
         distances["r"] = item
       } else {
-
         distances["r"] = smallestDistance(distances["r"], item)
       }
-    } else if(nodeRect.y >= objectRect.y + objectRect.height && (((nodeRect.x >= objectRect.x) && (nodeRect.x <= objectRect.x + objectRect.width + margin )) || (objectRect.x - margin <= (nodeRect.x + nodeRect.width ) && (objectRect.x + objectRect.width) >= (nodeRect.x + nodeRect.width)) || (objectRect.x >= nodeRect.x && (objectRect.x + objectRect.width) <= (nodeRect.x + nodeRect.width)))) {
+    } else if(isOnTopSide(getBoundingBoxes(nodeRect), getBoundingBoxes(objectRect), margin)) {
       const item = { side: "t", ...objectRect, delta: Math.abs(objectRect.y + objectRect.height - nodeRect.y)}
       if(!distances["t"]) {
         distances["t"] = item
@@ -105,11 +187,7 @@ function getRelativeDistances(node, stage) {
         distances["t"] = smallestDistance(distances["t"], item)
       }
 
-    } else if(nodeRect.y + nodeRect.height<= objectRect.y && (
-      ((nodeRect.x >= objectRect.x) && (nodeRect.x <= objectRect.x + objectRect.width + margin )) || 
-      (objectRect.x - margin <= (nodeRect.x + nodeRect.width) && (objectRect.x + objectRect.width) >= (nodeRect.x + nodeRect.width)) || 
-      (objectRect.x >= nodeRect.x && (objectRect.x + objectRect.width) <= (nodeRect.x + nodeRect.width))
-      )) {
+    } else if(isOnBottomSide(getBoundingBoxes(nodeRect), getBoundingBoxes(objectRect), margin)) {
       const item = { side: "b", ...objectRect, delta: Math.abs(nodeRect.y + nodeRect.height - objectRect.y)}
       if(!distances["b"]) {
         distances["b"] = item
@@ -124,11 +202,55 @@ function getRelativeDistances(node, stage) {
 
   return relatives
 }
+
+function createDistanceGuideLine({orientation, x1, y1, x2, y2, lineColor, wallSize, alignOffset, textOffset, delta}) {
+  let line = new Konva.Line({
+    points: [x1, y1, x2, y2],
+    stroke: lineColor,
+    strokeWidth: 1,
+    name: 'relative-guid-line',
+  })
+
+  let wallLeft = new Konva.Line({
+    points: [x1, y1 + wallSize, x1, y1 - wallSize],
+    stroke: lineColor,
+    strokeWidth: 1,
+    name: 'relative-guid-line',
+  })
+
+  let wallRight = new Konva.Line({
+    points: [x2 , y2 + wallSize, x2, y2 - wallSize ],
+    stroke: lineColor,
+    strokeWidth: 1,
+    name: 'relative-guid-line',
+  })
+
+
+  let text = new Konva.Text({
+    fill: lineColor,
+    fontSize: 10,
+    name: 'relative-guid-line',
+    text: Math.round(delta)
+  })
+
+  if(orientation === "H") {
+    text.x((x1) + (line.width() / 2) - text.width() / 2)
+    text.y(y2 + alignOffset + textOffset)
+  } else if(orientation === "V") {
+    text.y((y1) + (line.height() / 2) - text.height() / 2)
+    text.x(x2 + alignOffset + textOffset)
+  }
+
+  return [line, wallLeft, wallRight, text]
+}
+
+
 // #ff4bc8
 function drawRelativeGuideLines(relatives, node, layer, guides, lg) {
   const nodeRect = node.getClientRect()
   
   layer.find('.relative-guid-line').destroy()
+
   let offsetEvent = 0
   let minDelta = 5
   let lineColor = '#ff26a9'
@@ -138,226 +260,76 @@ function drawRelativeGuideLines(relatives, node, layer, guides, lg) {
   let LineSpace = 0
 
 
+  let horizontal = []
+  let vertical = []
+
+
   Object.values(relatives).forEach((relative) => {
 
     
     if (relative.side === 'l') {
-      const isEvenTop = ((nodeRect.y + nodeRect.height) - offsetEvent <= relative.y && (nodeRect.y + nodeRect.height) + offsetEvent >= relative.y) 
-      const isEventBottom = ((relative.y + relative.height) - offsetEvent <= nodeRect.y && (relative.y + relative.height) + offsetEvent >= nodeRect.y)
 
       if(!guides.some(e => e.orientation === "H")) return
 
       const objectRightSideX = relative.x + relative.width + LineSpace
       const centerLineY = lg.lineGuide
-      // isEvenTop ? relative.y + alignOffset : isEventBottom ? relative.y + relative.height - alignOffset : (relative.y + relative.height / 2) + alignOffset 
       const nodeLeftSideX = nodeRect.x - LineSpace
       const delta = Math.abs(relative.x + relative.width - nodeRect.x)
 
       if(delta > minDelta) {
-        let line = new Konva.Line({
-          points: [objectRightSideX, centerLineY, nodeLeftSideX, centerLineY],
-          stroke: lineColor,
-          strokeWidth: 1,
-          name: 'relative-guid-line',
-        })
-  
-        let wallLeft = new Konva.Line({
-          points: [objectRightSideX, centerLineY + wallSize, objectRightSideX, centerLineY - wallSize],
-          stroke: lineColor,
-          strokeWidth: 1,
-          name: 'relative-guid-line',
-        })
-  
-        let wallRight = new Konva.Line({
-          points: [nodeLeftSideX , centerLineY + wallSize, nodeLeftSideX, centerLineY - wallSize ],
-          stroke: lineColor,
-          strokeWidth: 1,
-          name: 'relative-guid-line',
-        })
-  
-  
-        let text = new Konva.Text({
-          fill: lineColor,
-          fontSize: 10,
-          name: 'relative-guid-line',
-          text: Math.round(delta)
-        })
-  
-        text.x((objectRightSideX) + (line.width() / 2) - text.width() / 2)
-        text.y(centerLineY + alignOffset + textOffset)
-  
-        layer.add(text)
-        layer.add(line)
-        layer.add(wallLeft)
-        layer.add(wallRight)
+        horizontal.push({ side: "l", x1: objectRightSideX, y1: centerLineY, x2: nodeLeftSideX, y2: centerLineY })
+        const nodes = createDistanceGuideLine({ orientation: "H", x1: objectRightSideX, y1: centerLineY, x2: nodeLeftSideX, y2: centerLineY, lineColor, wallSize, alignOffset, textOffset, delta, offsetEvent })
+
+        nodes.forEach(node => void layer.add(node))
         layer.draw()
       }
     } else if (relative.side === 'r') {
-      const isEvenTop = ((nodeRect.y + nodeRect.height) - offsetEvent <= relative.y && (nodeRect.y + nodeRect.height) + offsetEvent >= relative.y) 
-      const isEventBottom = ((relative.y + relative.height) - offsetEvent <= nodeRect.y && (relative.y + relative.height) + offsetEvent >= nodeRect.y)
 
       if(!guides.some(e => e.orientation === "H")) return
 
       const centerLineY = lg.lineGuide
-      // isEvenTop ? relative.y + alignOffset : isEventBottom ? relative.y + relative.height - alignOffset : (relative.y + relative.height / 2) + alignOffset 
       const objectLeftSideX = relative.x - LineSpace
       const nodeRightSideX = nodeRect.x + nodeRect.width + LineSpace
-
       const delta = Math.abs(nodeRect.x + nodeRect.width - relative.x)
 
       if(delta > minDelta) {
-        let line = new Konva.Line({
-        points: [objectLeftSideX, centerLineY, nodeRightSideX, centerLineY],
-        stroke: lineColor,
-        strokeWidth: 1,
-        name: 'relative-guid-line',
-      })
-
-      let wallLeft = new Konva.Line({
-        points: [objectLeftSideX, centerLineY + wallSize, objectLeftSideX, centerLineY - wallSize],
-        stroke: lineColor,
-        strokeWidth: 1,
-        name: 'relative-guid-line',
-      })
-
-      let wallRight = new Konva.Line({
-        points: [nodeRightSideX , centerLineY + wallSize, nodeRightSideX, centerLineY - wallSize ],
-        stroke: lineColor,
-        strokeWidth: 1,
-        name: 'relative-guid-line',
-      })
-
-
-      let text = new Konva.Text({
-        fill: lineColor,
-        fontSize: 10,
-        name: 'relative-guid-line',
-        text: Math.round(delta)
-      })
-
-      text.x((nodeRightSideX) + (line.width() / 2) - text.width() / 2)
-      text.y(centerLineY + alignOffset + textOffset)
-
-      layer.add(text)
-      layer.add(line)
-      layer.add(wallLeft)
-      layer.add(wallRight)
-      layer.draw()
-    }
+        horizontal.push({ side: "r", x1: nodeRightSideX, y1: centerLineY, x2: objectLeftSideX, y2: centerLineY })
+        const nodes = createDistanceGuideLine({ orientation: "H", x1: nodeRightSideX, y1: centerLineY, x2: objectLeftSideX, y2: centerLineY, lineColor, wallSize, alignOffset, textOffset, delta, offsetEvent })
+        nodes.forEach(node => void layer.add(node))
+        layer.draw()
+      }
 
     } else if (relative.side === 't') {
-
-      const isEvenRight = ((nodeRect.x + nodeRect.width) - offsetEvent <= relative.x && (nodeRect.x + nodeRect.width) + offsetEvent >= relative.x) 
-      const isEventLeft = ((relative.x + relative.width) - offsetEvent <= nodeRect.x && (relative.x + relative.width) + offsetEvent >= nodeRect.x)
-
       if(!guides.some(e => e.orientation === "V")) return
 
       const centerLineX = guides.find(e => e.orientation === "V").lineGuide
-      // lg.lineGuide + lg.offset
-      // isEvenRight ? relative.x + alignOffset : isEventLeft ? relative.x + relative.width - alignOffset : (relative.x + relative.width / 2) + alignOffset 
-      // lg.snap === "start" ? nodeRect.x : lg.snap === "center" ? nodeRect.x + (nodeRect.width / 2) : lg.snap === "end" ? nodeRect.x + nodeRect.width : lg.lineGuide
       const objectLeftSideY = relative.y + relative.height + LineSpace
-
       const nodeRightSideY = nodeRect.y - LineSpace
-
       const delta = Math.abs(relative.y + relative.height - nodeRect.y)
+
       if(delta > minDelta) {
-        let line = new Konva.Line({
-          points: [centerLineX, objectLeftSideY, centerLineX, nodeRightSideY],
-          stroke: lineColor,
-          strokeWidth: 1,
-          name: 'relative-guid-line',
-        })
-  
-        let wallLeft = new Konva.Line({
-          points: [centerLineX + wallSize, objectLeftSideY, centerLineX - wallSize, objectLeftSideY ],
-          stroke: lineColor,
-          strokeWidth: 1,
-          name: 'relative-guid-line',
-        })
-  
-        let wallRight = new Konva.Line({
-          points: [centerLineX + wallSize, nodeRightSideY, centerLineX - wallSize, nodeRightSideY ],
-          stroke: lineColor,
-          strokeWidth: 1,
-          name: 'relative-guid-line',
-        })
-  
-  
-        let text = new Konva.Text({
-          fill: lineColor,
-          fontSize: 10,
-          name: 'relative-guid-line',
-          text: Math.round(delta)
-        })
-  
-        text.x(centerLineX + alignOffset + textOffset)
-        text.y((objectLeftSideY) + (line.height() / 2) - text.height() / 2)
-  
-        layer.add(text)
-        layer.add(line)
-        layer.add(wallLeft)
-        layer.add(wallRight)
+        vertical.push({ side: "t", x1: centerLineX, y1: objectLeftSideY, x2: centerLineX, y2: nodeRightSideY })
+        const nodes = createDistanceGuideLine({ orientation: "V", x1: centerLineX, y1: objectLeftSideY, x2: centerLineX, y2: nodeRightSideY, lineColor, wallSize, alignOffset, textOffset, delta, offsetEvent })
+        nodes.forEach(node => void layer.add(node))
         layer.draw()
       }
 
     } else if (relative.side === 'b') {
-      const isEvenRight = ((nodeRect.x + nodeRect.width) - offsetEvent <= relative.x && (nodeRect.x + nodeRect.width) + offsetEvent >= relative.x) 
-      const isEventLeft = ((relative.x + relative.width) - offsetEvent <= nodeRect.x && (relative.x + relative.width) + offsetEvent >= nodeRect.x)
 
       if(!guides.some(e => e.orientation === "V")) return
 
       const centerLineX = guides.find(e => e.orientation === "V").lineGuide
-      // lg.lineGuide + lg.offset
-      // isEvenRight ? relative.x + alignOffset : isEventLeft ? relative.x + relative.width - alignOffset : (relative.x + relative.width / 2) + alignOffset 
       const objectLeftSideY = relative.y - LineSpace
-
       const nodeRightSideY = nodeRect.y + nodeRect.height + LineSpace
-
       const delta = Math.abs(nodeRect.y + nodeRect.height - relative.y )
 
       if(delta > minDelta) {
-
-        let line = new Konva.Line({
-          points: [centerLineX, objectLeftSideY, centerLineX, nodeRightSideY],
-          stroke: lineColor,
-          strokeWidth: 1,
-          name: 'relative-guid-line',
-        })
-  
-        let wallLeft = new Konva.Line({
-          points: [centerLineX + wallSize, objectLeftSideY, centerLineX - wallSize, objectLeftSideY ],
-          stroke: lineColor,
-          strokeWidth: 1,
-          name: 'relative-guid-line',
-        })
-  
-        let wallRight = new Konva.Line({
-          points: [centerLineX + wallSize, nodeRightSideY, centerLineX - wallSize, nodeRightSideY ],
-          stroke: lineColor,
-          strokeWidth: 1,
-          name: 'relative-guid-line',
-        })
-  
-  
-        let text = new Konva.Text({
-          fill: lineColor,
-          fontSize: 10,
-          name: 'relative-guid-line',
-          text: Math.round(delta)
-        })
-  
-        text.x(centerLineX + alignOffset + textOffset)
-        text.y((nodeRightSideY) + (line.height() / 2) - text.height() / 2)
-  
-        layer.add(text)
-        layer.add(line)
-        layer.add(wallLeft)
-        layer.add(wallRight)
+        vertical.push({ side: "b", x1: centerLineX, y1: nodeRightSideY, x2: centerLineX, y2: objectLeftSideY, })
+        const nodes = createDistanceGuideLine({ orientation: "V", x1: centerLineX, y1: nodeRightSideY, x2: centerLineX, y2: objectLeftSideY, lineColor, wallSize, alignOffset, textOffset, delta, offsetEvent })
+        nodes.forEach(node => void layer.add(node))
         layer.draw()
       }
     }
-  
   })
 }
 
@@ -372,7 +344,6 @@ function getLineGuideStops(skipShape, stage) {
   stage.find('.object').forEach((guideItem) => {
 
     if (guideItem === skipShape) {
-
       return
     }
 
@@ -386,6 +357,99 @@ function getLineGuideStops(skipShape, stage) {
     vertical: vertical.flat(),
     horizontal: horizontal.flat(),
   }
+}
+
+
+
+function getLineGuideStops2(skipShape, stage) {
+  let vertical = [{ id: "stage", point: 0 }, { id: "stage", point: stage.width() / 2 }, { id: "stage", point: stage.width() }]
+  let horizontal = [{ id: "stage", point: 0 }, { id: "stage", point: stage.height() / 2 }, { id: "stage", point: stage.height() }]
+
+  stage.find('.object').forEach((guideItem) => {
+
+    if (guideItem === skipShape) {
+      return
+    }
+
+    let box = guideItem.getClientRect()
+    
+    vertical.push([{ id: guideItem.id(), box, point: box.x }, { id: guideItem.id(), box, point: box.x + box.width }, { id: guideItem.id(), box, point: box.x + box.width / 2 }])
+    horizontal.push([{ id: guideItem.id(), box, point: box.y }, { id: guideItem.id(), box, point: box.y + box.height }, { id: guideItem.id(), box, point: box.y + box.height / 2 }])
+
+  })
+
+  return {
+    vertical: vertical.flat(),
+    horizontal: horizontal.flat(),
+  }
+}
+
+
+// find all snapping possibilities
+function getGuides2(lineGuideStops, itemBounds) {
+  let resultV = []
+  let resultH = []
+
+  lineGuideStops.vertical.forEach((lineGuide, i) => {
+    itemBounds.vertical.forEach((itemBound) => {
+      let diff = Math.abs(lineGuide.point - itemBound.guide)
+
+      if (diff < 3) {
+        resultV.push({
+          lineGuide: lineGuide.point,
+          diff: diff,
+          snap: itemBound.snap,
+          offset: itemBound.offset,
+          box: itemBound.box,
+          alignedTo: lineGuide
+        })
+      }
+    })
+  })
+
+  lineGuideStops.horizontal.forEach((lineGuide) => {
+    itemBounds.horizontal.forEach((itemBound) => {
+      let diff = Math.abs(lineGuide.point - itemBound.guide)
+
+      if (diff < 3) {
+        resultH.push({
+          lineGuide: lineGuide.point,
+          diff: diff,
+          snap: itemBound.snap,
+          offset: itemBound.offset,
+          box: itemBound.box,
+          alignedTo: lineGuide
+        })
+      }
+    })
+  })
+
+
+  let rVm = {}
+  let rHm = {}
+
+
+  resultH.forEach(e => {
+    if(!rHm[e.alignedTo.id]) {
+      rHm[e.alignedTo.id] = [e]
+    } else {
+      rHm[e.alignedTo.id].push(e)
+    }
+  })
+
+  resultV.forEach(e => {
+    if(!rVm[e.alignedTo.id]) {
+      rVm[e.alignedTo.id] = [e]
+    } else {
+      rVm[e.alignedTo.id].push(e)
+    }
+  })
+
+
+  
+  console.log(rVm, rHm)
+
+
 }
 
 
@@ -441,14 +505,11 @@ function getGuides(lineGuideStops, itemBounds) {
   let resultV = []
   let resultH = []
 
-
-
   lineGuideStops.vertical.forEach((lineGuide, i) => {
     itemBounds.vertical.forEach((itemBound) => {
       let diff = Math.abs(lineGuide - itemBound.guide)
-      // if the distance between guild line and object snap point is close we can consider this for snapping
 
-      if (diff < 5) {
+      if (diff < 3) {
         resultV.push({
           lineGuide: lineGuide,
           diff: diff,
@@ -467,7 +528,7 @@ function getGuides(lineGuideStops, itemBounds) {
     itemBounds.horizontal.forEach((itemBound) => {
       let diff = Math.abs(lineGuide - itemBound.guide)
 
-      if (diff < 5) {
+      if (diff < 3) {
         resultH.push({
           lineGuide: lineGuide,
           diff: diff,
@@ -484,26 +545,31 @@ function getGuides(lineGuideStops, itemBounds) {
   let guides = []
 
 
-  // find closest snap
+  let v = resultV.filter(e => e.diff <= 5).sort((a, b) => a.diff - b.diff)
+  let startV = v.find(e => e.snap === "start")
+  let centerV = v.find(e => e.snap === "center")
+  let endV = v.find(e => e.snap === "end")
+  let minV = startV ? startV : endV ? endV : centerV ? centerV : v[0]
 
-  let v = resultV.sort((a, b) => a.diff - b.diff)
-  let minV = v[0]
   
-  let h = resultH.sort((a, b) => a.diff - b.diff)   
-  let minH = h[0]
-  
+  let h = resultH.filter(e => e.diff <= 5).sort((a, b) => a.diff - b.diff)   
 
-
+  let startH = h.find(e => e.snap === "start")
+  let centerH = h.find(e => e.snap === "center")
+  let endH = h.find(e => e.snap === "end")
+  let minH = startH ? startH : endH ? endH : centerH ? centerH : h[0]
   
   if (minV) {
     guides.push({
       lineGuide: minV.lineGuide,
       offset: minV.offset,
       orientation: 'V',
+      diff: minV.diff,
       snap: minV.snap,
       box: minV.box,
       other: minV.other,
-      itemBound: minV.itemBound
+      itemBound: minV.itemBound,
+      disabled: false
     })
   }
   
@@ -513,15 +579,19 @@ function getGuides(lineGuideStops, itemBounds) {
       offset: minH.offset,
       orientation: 'H',
       snap: minH.snap,
+      diff: minH.diff,
       box: minH.box,
       other: minH.other,
-      itemBound: minH.itemBound
+      itemBound: minH.itemBound,
+      disabled: false
     })
   }
 
 
   return guides
 }
+
+
 
 // #ff4bc8
 function drawGuides(guides, layer) {
@@ -554,72 +624,154 @@ function drawGuides(guides, layer) {
 
 
 function Layer(props) {
-  const { stage } = props
+  const { stage, attrs } = props
 
-  const layer = useMemo(() => new Konva.Layer(), [])
+  const context = useContext(KonvaContext)
+  const { store, setSelected, setMode } = context
+
+  const layer = useMemo(() => new Konva.Layer(attrs), [])
 
 
   useEffect(() => {
+    if(stage) {
+      layer.on("mousedown.selecting", e => {
+        if(store.mode === "HAND") {
+          setSelected(e.target.id())
+        }
+      })
+    }
+
+    return () => {
+      if(stage) {
+        layer.off("mousedown.selecting")
+      }
+    }
+
+  },[stage, store.mode])
+
+  useEffect(() => {
     if (stage) {
+
+      // let group = new Konva.Layer({
+      //   x: 100,
+      //   y: 100,
+      //   width: 100,
+      //   height: 50
+      // })
+
+
       stage.add(layer)
 
 
+      let prevGuides = null
+      let prevRelatives = null
+      let prevName = null
+      // let prevPos = null
+    
+      // let count = 0
       layer.on('dragmove', function (e) {
+
         if (e.target.className === "Transformer") {
           return
         }
 
-        e.target.x(Math.round(e.target.x()))
-        e.target.y(Math.round(e.target.y()))
-        e.target.width(Math.round(e.target.width()))
-        e.target.height(Math.round(e.target.height()))
+        if(prevName !== e.target.id()) {
+          prevGuides = null
+          prevName = null
+        }
 
-        layer.draw()
-
-
+        prevName = e.target.id()
+     
         // clear all previous lines on the screen
         layer.find('.relative-guid-line').destroy()
         layer.find('.guid-line').destroy()
 
-        let relatives = getRelativeDistances(e.target, stage)
-
+        
         // find possible snapping lines
         let lineGuideStops = getLineGuideStops(e.target, stage)
         // find snapping points of current object
         let itemBounds = getObjectSnappingEdges(e.target)
-
         // now find where can we snap current object
         let guides = getGuides(lineGuideStops, itemBounds)
 
 
-        // do nothing of no snapping
-        if (!guides.length) {
-          return
-        }
-
-
+        
+        getGuides2(getLineGuideStops2(e.target, stage), itemBounds)
 
         
 
+        // console.log("-",guides,".", prevGuides)
+        // do nothing of no snapping
+        if (!guides.length) {
+          prevGuides = null
+          prevRelatives = null
+          return
+        }
+        /**
+         * FIX Align when dragging and relative object have the same uneven height or width - Priorities snap start or snap end, and skip center.
+         */
+        guides = guides.map(e => {
+          if(prevGuides) {
+            const g = prevGuides.find(p => p.orientation === e.orientation )
+
+            if(g && 
+                (Math.abs(g.diff - e.diff) <= 1 || 
+                (Math.abs(g.diff - e.diff) <= 2 && (g.box.height === e.box.height || e.box.width === g.box.width)) )) {
+
+                return g
+              }
+            }
+          return e
+
+        })
+
+        let relatives = getRelativeDistances(e.target, stage, guides)
+
+
+        for(let key in relatives) {
+          if(prevRelatives) {
+            const g = prevRelatives[key]
+
+            if(g && Math.abs(g.delta - relatives[key].delta) <= 3) {
+              relatives[key] = g
+            }
+
+          }
+        }
+      
+
+
+        /**
+         * FIX Relatives
+         * racecondition on relatives needs to get fixed
+         * Loop through prev and relatives and then check the differ for which return value to priorities
+         * 
+        */
+
+
+      
+        prevGuides = guides
+        prevRelatives = relatives
+      
 
         // now force object position
 
     
-
+  
         guides.forEach((lg) => {
           switch (lg.snap) {
             case 'start': {
               switch (lg.orientation) {
                 case 'V': {
-                  e.target.x(lg.lineGuide + lg.offset)
-                  drawGuides(guides, layer)
-                  drawRelativeGuideLines(relatives, e.target, layer, guides, lg )
+                  !lg.disabled && e.target.x(lg.lineGuide + lg.offset)
+                  !lg.disabled && drawGuides(guides, layer)
+                  !lg.disabled && drawRelativeGuideLines(relatives, e.target, layer, guides, lg )
                   break
                 }
                 case 'H': {
-                  e.target.y(lg.lineGuide + lg.offset)
-                  drawGuides(guides, layer)
-                  drawRelativeGuideLines(relatives, e.target, layer, guides, lg )
+                  !lg.disabled && e.target.y(lg.lineGuide + lg.offset)
+                  !lg.disabled && drawGuides(guides, layer)
+                  !lg.disabled && drawRelativeGuideLines(relatives, e.target, layer, guides, lg )
                   break
                 }
               }
@@ -628,15 +780,15 @@ function Layer(props) {
             case 'center': {
               switch (lg.orientation) {
                 case 'V': {
-                  e.target.x(lg.lineGuide + lg.offset)
-                  drawGuides(guides, layer)
-                  drawRelativeGuideLines(relatives, e.target, layer, guides, lg )
+                  !lg.disabled && e.target.x(lg.lineGuide + lg.offset)
+                  !lg.disabled && drawGuides(guides, layer)
+                  !lg.disabled && drawRelativeGuideLines(relatives, e.target, layer, guides, lg )
                   break
                 }
                 case 'H': {
-                  e.target.y(lg.lineGuide + lg.offset)
-                  drawGuides(guides, layer)
-                  drawRelativeGuideLines(relatives, e.target, layer, guides, lg )
+                  !lg.disabled && e.target.y(lg.lineGuide + lg.offset)
+                  !lg.disabled && drawGuides(guides, layer)
+                  !lg.disabled && drawRelativeGuideLines(relatives, e.target, layer, guides, lg )
                   break
                 }
               }
@@ -645,26 +797,29 @@ function Layer(props) {
             case 'end': {
               switch (lg.orientation) {
                 case 'V': {
-                  e.target.x(lg.lineGuide + lg.offset)
-                  drawGuides(guides, layer)
-                  drawRelativeGuideLines(relatives, e.target, layer, guides, lg )
+                  !lg.disabled && e.target.x(lg.lineGuide + lg.offset)
+                  !lg.disabled && drawGuides(guides, layer)
+                  !lg.disabled && drawRelativeGuideLines(relatives, e.target, layer, guides, lg )
                   break
                 }
                 case 'H': {
-                  e.target.y(lg.lineGuide + lg.offset)
-                  drawGuides(guides, layer)
-                  drawRelativeGuideLines(relatives, e.target, layer, guides, lg )
+                  !lg.disabled && e.target.y(lg.lineGuide + lg.offset)
+                  !lg.disabled && drawGuides(guides, layer)
+                  !lg.disabled && drawRelativeGuideLines(relatives, e.target, layer, guides, lg )
                   break
                 }
               }
               break
             }
+
             default: {
               console.log("e.target", e.target.attrs)
              
             }
-          }
+          }  
         })
+
+
       })
 
       layer.on('dragend', function (e) {

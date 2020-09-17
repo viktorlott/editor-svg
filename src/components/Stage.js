@@ -7,7 +7,7 @@ import Structure from './Structure'
 import canvg from 'canvg'
 import { NavContainer, NavButton, Icon, StageContainer, CanvasWrapper, LeftSide, RightSide, SideMenu, SideMenuHeader, SideMenuParameters, Options, Input, AttributeSection, FormWrapper} from './styles'
 import CursorIcon from './styles/cursor_normal'
-
+import InputColor from 'react-input-color';
 
 function DisplayText(object, stage) {
   if(object) {
@@ -170,8 +170,8 @@ function RectFormAttributes(props) {
   return (
     <AttributeSection>
         <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 50, flexFlow: "row"}}>
-          <InputForm onChange={onChangeRectColor} value={attrs.fill} width={"75px"} height={"40px"} label={"Fyll"} type="color"/>
-          <InputForm onChange={onChangeRectBorderColor} value={attrs.stroke} width={"75px"} height={"40px"} label={"Kant"} type="color"/>
+          <InputForm onChange={onChangeRectColor} onClick={() => {}} value={attrs.fill} width={"75px"} height={"40px"} label={"Fyll"} type="color" colorFormat="rgba" />
+          <InputForm onChange={onChangeRectBorderColor} value={attrs.stroke} width={"75px"} height={"40px"} label={"Kant"} type="color" colorFormat="rgba"/>
         </AttributeSection>
         <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 0, flexFlow: "row"}}>
           <InputForm onChange={onChangeRectBorderWidth} value={attrs.strokeWidth} width={"75px"} height={"40px"} label={"Kant"} type="number"/>
@@ -193,11 +193,22 @@ function getShapeSizeAttrsScale(selectedObject) {
 function ShapeSizeAttributes(props) {
   const { stage, selectedObject } = props
   const [attrs, setAttrs] = useState(() => selectedObject && getShapeSizeAttrs(selectedObject))
+  const ts = useRef()
+
+
+
 
 
   useEffect(() => {
     const transformer = stage.findOne("#"+selectedObject.id()+"_transformer")
     setAttrs(getShapeSizeAttrsScale(selectedObject, transformer))
+
+    if(ts.current) {
+      clearTimeout(ts.current)
+      ts.current = null
+    }
+  
+    
 
     const id = selectedObject.id()
     const shape = selectedObject
@@ -216,9 +227,69 @@ function ShapeSizeAttributes(props) {
     // shape.on("transform."+id,updateFunc)
     shape.dragBoundFunc(updateFunc)
 
+    
+
+    const handleKeyPress = e => {
+      if(selectedObject) {
+        const node = selectedObject
+        let jump = e.shiftKey ? 10 : 1
+        if(e.altKey) {
+          switch(e.keyCode) {
+            case 37: 
+              node.width(node.width() - jump) 
+              break;
+            case 38:
+              node.height(node.height() - jump) 
+              break;
+            case 39: 
+              node.width(node.width() + jump) 
+              break;
+            case 40:
+              node.height(node.height() + jump) 
+              break;
+          }
+
+        } else {
+          switch(e.keyCode) {
+            case 37: 
+              node.x(node.x() - jump) 
+              break;
+            case 38:
+              node.y(node.y() - jump) 
+              break;
+            case 39: 
+              node.x(node.x() + jump) 
+              break;
+            case 40:
+              node.y(node.y() + jump) 
+              break;
+          }
+        }
+
+
+        if(ts.current) {
+          clearTimeout(ts.current)
+          ts.current = null
+        }
+
+        ts.current = setTimeout(() => {
+          selectedObject && transformer.resizeEnabled(true)
+          node.parent.draw()
+        }, 500)
+
+        transformer.resizeEnabled(false)
+
+        node.parent.draw()
+        updateFunc()
+      }
+    }
+
+    window.document.addEventListener("keydown", handleKeyPress)
+
     return () => {
       shape.off("transform."+id)
       shape.dragBoundFunc(null)
+      window.document.removeEventListener("keydown", handleKeyPress)
     }
   },[selectedObject.id()])
   
@@ -227,7 +298,7 @@ function ShapeSizeAttributes(props) {
   }, [selectedObject.id()])
   
   const onChangeWidth = useCallback((e) => {
-    if(e.target.value < 3) return
+    if(e.target.value < -1) return
     selectedObject.width(+e.target.value)
     selectedObject.scaleY(1)
     selectedObject.scaleX(1)
@@ -236,7 +307,7 @@ function ShapeSizeAttributes(props) {
   },[selectedObject.id()])
 
   const onChangeHeight = useCallback((e) => {
-    if(e.target.value < 3) return
+    if(+e.target.value < -1) return
     selectedObject.height(+e.target.value)
     selectedObject.scaleY(1)
     selectedObject.scaleX(1)
@@ -245,14 +316,14 @@ function ShapeSizeAttributes(props) {
   },[selectedObject.id()])
 
   const onChangeX = useCallback((e) => {
-    if(e.target.value < 3) return
+    if(+e.target.value < -1) return
     selectedObject.x(+e.target.value)
     selectedObject.parent.draw()
     updateAttrs()
   },[selectedObject.id()])
 
   const onChangeY = useCallback((e) => {
-    if(e.target.value < 3) return
+    if(e.target.value < -1) return
     selectedObject.y(+e.target.value)
     selectedObject.parent.draw()
     updateAttrs()
@@ -293,20 +364,47 @@ function Stage(props) {
     const { store, setSelected, setMode } = context
     const { selected } = store
     const selectedObject = useMemo(() => getSelectedObject(store.selected, stage), [stage, store.selected])
+    const currRef = useRef()
+    const textboxRef = useRef()
+    
+
+    
+
+    useEffect(() => {
+      if(stage) {
+        stage.on("click.selecting", (e) => {
+          if(store.mode === "HAND") {
+            setSelected(e.target.id())
+          }
+        })
+      }
+
+      return () => {
+        if(stage) {
+          stage.off("click.selecting")
+        }
+      }
+
+    },[stage, store.mode])
 
     
     const canvasCB = useCallback((ref) => {
+      const { attrs={} } = props
       const stage = new Konva.Stage({
         container: ref,
         width: 794,
         // height: 1123,
-        height: 150
+        height: 150,
+        pixelRatio: 4,
+        ...attrs
        
       })
+
+      currRef.current = ref
       
-      stage.on("click", (e) => {
-        setSelected(e.target.id())
-      })
+      // stage.on("click", (e) => {
+      //   setSelected(e.target.id())
+      // })
 
       window.document.addEventListener("click", e => {
         console.log(document.querySelector("#rightside").contains(e.target))
@@ -407,10 +505,15 @@ function Stage(props) {
 
         document.body.appendChild(svg)
 
+        try {
+          navigator.clipboard.writeText(svgStr).then(function() {
+            console.log("Copied!")
+          })
+        } catch(err) {
+          console.log(err)
+        }
 
-        navigator.clipboard.writeText(svgStr).then(function() {
-          alert("Du har den i 'clipboarden'!")
-        })
+        textboxRef.current.value = svgStr
      
       },
       [stage],
@@ -516,6 +619,10 @@ function Stage(props) {
             return <Structure {...struct} stage={stage} />
           })}
         </CanvasWrapper>
+
+        <div style={{margin: "auto"}}>
+          <textarea type="text" style={{ width: "300px", height: "200px", border: "1px solid rgba(0,0,0,0.3)", outline: "none", resize: "none", borderRadius: 3}} width="200px"  ref={textboxRef}/>
+        </div>
 
         <RightSide id="rightside">
           <SideMenu>
