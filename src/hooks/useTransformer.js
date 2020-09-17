@@ -196,7 +196,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
 
     useEffect(() => {
         if(store.mode && shape) {
-            console.log(store.mode)
+
             if(store.mode !== "HAND") {
                 shape.draggable(false)
             } else {
@@ -208,7 +208,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
 
     useEffect(() => {
         shape.dragDistance(3)
-        console.log(shape.attrs)
+
         layer.add(shape)
         layer.add(transform)
         transform.nodes([shape])
@@ -220,6 +220,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
 
      
         shape.on('mouseover', function (e) {
+
             if (!transform.getAttr("resizeEnabled")) {
                 // transform.setAttr("borderStroke", "#0099ff")
                 transform.setAttr("borderStroke", "#0099ff")
@@ -246,8 +247,11 @@ function useTransformer(shape, layer, stage, attrs = {}) {
         })
         shape.on("transformend", () => {
             transform.resizeEnabled(true)
+            transform.setAttr("borderStroke", "#0099ff")
+            transform.setZIndex(layer.children.length)
         })
         shape.on("transform", e => {
+
             transform.padding(shape.strokeWidth() / 2)
 
             shape.strokeWidth(shape.strokeWidth())
@@ -269,6 +273,14 @@ function useTransformer(shape, layer, stage, attrs = {}) {
             let guides = getGuides(lineGuideStops, itemBounds)
 
 
+            shape.setAttrs({
+                width: Math.max(shape.width() * shape.scaleX(), 5),
+                height: Math.max(shape.height() * shape.scaleY(), 5),
+                scaleX: 1,
+                scaleY: 1,
+              });
+
+              layer.draw()
 
             // do nothing of no snapping
             if (!guides.length) {
@@ -280,12 +292,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
             tempGuides = guides.filter(lg => lg.diff !== 0)
 
 
-                shape.setAttrs({
-                    width: Math.max(shape.width() * shape.scaleX(), 5),
-                    height: Math.max(shape.height() * shape.scaleY(), 5),
-                    scaleX: 1,
-                    scaleY: 1,
-                  });
+            
 
         })
     
@@ -399,6 +406,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
 
         shape.on("dragmove.transform_resize", () => {
             if(shape.id() === store.selected) {
+                transform.setAttr("isDragging",true)
                 transform.resizeEnabled(false)
             }
         })
@@ -406,6 +414,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
         shape.on("dragend.transform_resize", () => {
             if(shape.id() === store.selected) {
                 transform.resizeEnabled(true)
+                transform.setAttr("isDragging",false)
             }
         })
 

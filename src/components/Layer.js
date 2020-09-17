@@ -447,7 +447,7 @@ function getGuides2(lineGuideStops, itemBounds) {
 
 
   
-  console.log(rVm, rHm)
+  // console.log(rVm, rHm)
 
 
 }

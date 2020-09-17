@@ -274,10 +274,13 @@ function ShapeSizeAttributes(props) {
 
         ts.current = setTimeout(() => {
           selectedObject && transformer.resizeEnabled(true)
+          selectedObject && transformer.setAttr("borderStroke", "#0099ff")
+          selectedObject && transformer.setZIndex(node.parent.children.length)
           node.parent.draw()
         }, 500)
 
         transformer.resizeEnabled(false)
+        transformer.setAttr("borderStroke", "transparent")
 
         node.parent.draw()
         updateFunc()
