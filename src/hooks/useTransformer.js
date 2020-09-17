@@ -195,6 +195,18 @@ function useTransformer(shape, layer, stage, attrs = {}) {
 
 
     useEffect(() => {
+        if(store.mode && shape) {
+            console.log(store.mode)
+            if(store.mode !== "HAND") {
+                shape.draggable(false)
+            } else {
+                shape.draggable(true)
+            }
+            layer.draw()
+        }
+    }, [store.mode, shape])
+
+    useEffect(() => {
         shape.dragDistance(3)
         console.log(shape.attrs)
         layer.add(shape)

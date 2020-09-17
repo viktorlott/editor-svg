@@ -420,9 +420,9 @@ function DrawShape(props) {
             // selectionRectangle.attrs.fill = getRandomColor()
 
 
-            if (e.target !== stage) {
-                return
-            }
+            // if (e.target !== stage) {
+            //     return
+            // }
 
 
             x1 = stage.getPointerPosition().x

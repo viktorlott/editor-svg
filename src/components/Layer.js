@@ -716,7 +716,7 @@ function Layer(props) {
 
             if(g && 
                 (Math.abs(g.diff - e.diff) <= 1 || 
-                (Math.abs(g.diff - e.diff) <= 2 && (g.box.height === e.box.height || e.box.width === g.box.width)) )) {
+                (Math.abs(g.diff - e.diff) <= 1 && (g.box.height === e.box.height || e.box.width === g.box.width)) )) {
 
                 return g
               }
