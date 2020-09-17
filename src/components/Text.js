@@ -13,7 +13,7 @@ function Text(props) {
     // const transform =  useMemo(() => new Konva.Transformer(), [])  
   
     const text = useMemo(() => {
-        const textNode = new Konva.Text(attrs);
+        const textNode = new Konva.Text({specialText: "", ...attrs, });
         textNode.placeholder = "Skriv text här"
         return textNode
     }, [])
@@ -22,7 +22,10 @@ function Text(props) {
     // const [structures, updateStore] = useStructureStore(text)
   
     const transform = useTransformer(text, layer, stage, { 
-      enabledAnchors: ['middle-left', 'middle-right'],
+      enabledAnchors: ['middle-left', 'middle-right', "bottom-center"],
+      // keepRatio: true,
+      // centeredScaling: true,
+      // borderDash: [3, 3],
       boundBoxFunc: (oldBox, newBox) => {
         if (newBox.width < 100) {
           return oldBox;
@@ -34,16 +37,13 @@ function Text(props) {
     useEffect(() => {
 
       // console.log(text.data())
-      text.on('transform', (e) => {
+
+
+
+
   
-        text.setAttrs({
-          width: Math.max(text.width() * text.scaleX(), 100),
-          scaleX: 1,
-          scaleY: 1,
-          
-        });
-      
-  
+      text.on('transform', (e) => { 
+        
       })
   
       text.on('dblclick', () => {

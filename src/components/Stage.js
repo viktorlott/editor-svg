@@ -64,8 +64,9 @@ function TextFormAttributes(props) {
   const [attrs, setAttrs] = useState(() => selectedObject && {...selectedObject.attrs, fontFamily: selectedObject.fontFamily(), fontStyle: selectedObject.fontStyle()})
 
   const updateAttrs = useCallback(() => {
+
     setAttrs({...selectedObject.attrs, fontFamily: selectedObject.fontFamily(), fill: selectedObject.fill() })
-  }, [selectedObject, selectedObject.id()])
+  }, [selectedObject, selectedObject.id(), stage])
 
   const onChangeFontFamily = (e) => {
 
@@ -76,10 +77,20 @@ function TextFormAttributes(props) {
     updateAttrs()
   }
 
+  const onChangeSpecialText = (e) => {
+    selectedObject.setAttr("specialText", e.target.value)
+    if(selectedObject.parent) {
+      selectedObject.parent.draw()
+    }
+    updateAttrs()
+  }
+
+
   const onChangeFontSize = (e) => {
     selectedObject.fontSize(+e.target.value)
     if(selectedObject.parent) {
       selectedObject.parent.draw()
+      
     }
     updateAttrs()
   }
@@ -94,7 +105,6 @@ function TextFormAttributes(props) {
   }
 
   const onChangeFontColor = (e) => {
-
     selectedObject.fill(e.target.value)
     if(selectedObject.parent) {
       selectedObject.parent.draw()
@@ -103,11 +113,12 @@ function TextFormAttributes(props) {
   }
 
   const optionsDataFontFamilies = [{ value: "Arial", label: "Arial"}, { value: "Helvetica", label: "Helvetica"}, { value: "sans-serif", label: "Sans-serif"}, { value: "Times", label: "Times"}]
-
   const optionsDataFontStyles = [{ value: "normal", label: "Normal"}, { value: "bold", label: "Bold"}, { value: "italic", label: "Italic"}]
+
 
   return (
     <AttributeSection>
+          <InputForm onChange={onChangeSpecialText} value={attrs.specialText} width={"150px"} label={"Mall"} type="text"/>
           <OptionsForm onChange={onChangeFontFamily} label="Typsnitt" value={attrs.fontFamily}  selected={"Times"} width={"150px"} data={optionsDataFontFamilies} />
           <InputForm onChange={onChangeFontSize} value={attrs.fontSize} width={"150px"} label={"Text storlek"} type="number"/>
           <OptionsForm onChange={onChangeFontWeight} label={"Text tjocklek"} value={attrs.fontStyle} selected={"normal"} width={"150px"} data={optionsDataFontStyles} />
@@ -213,14 +224,16 @@ function ShapeSizeAttributes(props) {
     const id = selectedObject.id()
     const shape = selectedObject
     const updateFunc = () => {
-      setAttrs(getShapeSizeAttrsScale(selectedObject))
-
-      shape.setAttrs({
-        width: Math.max(shape.width() * shape.scaleX(), 5),
-        height: Math.max(shape.height() * shape.scaleY(), 5),
-        scaleX: 1,
-        scaleY: 1,
-      });
+      if(shape.className !== "Text") {
+        setAttrs(getShapeSizeAttrsScale(selectedObject))
+        shape.setAttrs({
+          width: Math.max(shape.width() * shape.scaleX(), 5),
+          height: Math.max(shape.height() * shape.scaleY(), 5),
+          scaleX: 1,
+          scaleY: 1,
+        });
+        
+      }
     }
 
     shape.on("transform."+id, updateFunc)
@@ -335,8 +348,9 @@ function ShapeSizeAttributes(props) {
   return (
     <AttributeSection>
         <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 0, flexFlow: "row"}}>
+
           <InputForm onChange={onChangeWidth} value={Math.round(attrs.width)} width={"75px"} height={"40px"} style={{fontSize: "14px"}} label={"Bredd"} type="number"/>
-          <InputForm onChange={onChangeHeight} value={Math.round(attrs.height)} width={"75px"} height={"40px"} style={{fontSize: "14px"}} label={"Höjd"} type="number"/>
+          {!props.hideHeight && <InputForm onChange={onChangeHeight} value={Math.round(attrs.height)} width={"75px"} height={"40px"} style={{fontSize: "14px"}} label={"Höjd"} type="number"/>}
         </AttributeSection>
         <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 0, flexFlow: "row"}}>
           <InputForm onChange={onChangeX} value={Math.round(attrs.x)} width={"75px"} height={"40px"} style={{fontSize: "14px"}} label={"X"} type="number"/>
@@ -483,7 +497,14 @@ function Stage(props) {
               shape.setAttribute("y", object.y() + 2)  
               shape.setAttribute("dominant-baseline", "hanging")  
               shape.setAttribute("font-family", object.fontFamily())  
-              shape.textContent = object.text()
+
+              const specialText = object.getAttr("specialText")
+
+              if(specialText) {
+                shape.textContent = specialText
+              } else {
+                shape.textContent = object.text()
+              }
             }
 
             if(type === "Line") {
@@ -635,7 +656,7 @@ function Stage(props) {
               </h2>
             </SideMenuHeader>
             <SideMenuParameters>
-               {selectedObject && <ShapeSizeAttributes selectedObject={selectedObject} stage={stage}/>}
+               {selectedObject && <ShapeSizeAttributes hideHeight={selectedObject.className === "Text"} selectedObject={selectedObject} stage={stage}/>}
                {selectedObject && selectedObject.className === "Text" && <TextFormAttributes selectedObject={selectedObject} key={selectedObject.id()} stage={stage}/>}
                {selectedObject && selectedObject.className === "Rect" && <RectFormAttributes selectedObject={selectedObject} stage={stage}/>}
                {selectedObject && (

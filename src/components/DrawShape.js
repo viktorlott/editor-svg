@@ -433,6 +433,7 @@ function DrawShape(props) {
             // selectionRectangle.fill("transparent")
             selectionRectangle.visible(true)
             selectionRectangle.width(0)
+            
             selectionRectangle.height(0)
             selectionRectangle.moveToTop()
             layer.draw()

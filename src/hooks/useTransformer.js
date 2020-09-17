@@ -180,7 +180,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
         rotateAnchorOffset: 30,
         ignoreStroke: true,
         strokeScaleEnabled: false,
-        
+        isDragging: false,
         // keepRatio: true,
         // padding: shape.strokeWidth() / 2,
         ...attrs,
@@ -197,7 +197,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
     useEffect(() => {
         if(store.mode && shape) {
 
-            if(store.mode !== "HAND") {
+            if(store.mode !== "HAND" && store.mode !== "TEXT") {
                 shape.draggable(false)
             } else {
                 shape.draggable(true)
@@ -221,7 +221,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
      
         shape.on('mouseover', function (e) {
 
-            if (!transform.getAttr("resizeEnabled")) {
+            if (!transform.getAttr("resizeEnabled") && !transform.getAttr("isDragging")) {
                 // transform.setAttr("borderStroke", "#0099ff")
                 transform.setAttr("borderStroke", "#0099ff")
                 transform.setZIndex(layer.children.length)
@@ -230,6 +230,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
         })
 
         shape.on('mouseout', function (e) {
+            console.log(transform.getAttr("isDragging"))
             if (!transform.getAttr("resizeEnabled")) {
                 transform.setAttr("borderStroke", "transparent")
                 layer.draw()
@@ -243,9 +244,13 @@ function useTransformer(shape, layer, stage, attrs = {}) {
         let tempGuides = null
 
         shape.on("transformstart", () => {
-            transform.resizeEnabled(false)
+            transform.setAttr("isDragging", true)
+            if(shape.className !== "Text") {
+                transform.resizeEnabled(false)
+            }
         })
         shape.on("transformend", () => {
+            transform.setAttr("isDragging", false)
             transform.resizeEnabled(true)
             transform.setAttr("borderStroke", "#0099ff")
             transform.setZIndex(layer.children.length)
@@ -272,15 +277,27 @@ function useTransformer(shape, layer, stage, attrs = {}) {
             // now find where can we snap current object
             let guides = getGuides(lineGuideStops, itemBounds)
 
-
-            shape.setAttrs({
+            const attrs = {
                 width: Math.max(shape.width() * shape.scaleX(), 5),
                 height: Math.max(shape.height() * shape.scaleY(), 5),
                 scaleX: 1,
                 scaleY: 1,
-              });
+              }
 
-              layer.draw()
+            if(shape.className !== "Text") {
+                shape.setAttrs(attrs)
+            }  else {
+
+                delete attrs["height"]
+                shape.setAttrs({
+                    width: Math.max(shape.width() * shape.scaleX() * shape.scaleY(), 50), 
+                    fontSize: Math.max(shape.fontSize() * shape.scaleY(), 6),
+                    scaleX: 1,
+                    scaleY: 1
+                })
+            }
+
+            //   layer.batchDraw()
 
             // do nothing of no snapping
             if (!guides.length) {
@@ -305,7 +322,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
             let tempBox = { ...newBox }
 
             tempGuides.forEach((lg) => {
-
+                return false
                 switch (lg.snap) {
                     case 'start': {
                         switch (lg.orientation) {
@@ -403,10 +420,13 @@ function useTransformer(shape, layer, stage, attrs = {}) {
             }
         }
 
-
-        shape.on("dragmove.transform_resize", () => {
+        shape.on("dragstart.transform_resize", () => {
             if(shape.id() === store.selected) {
                 transform.setAttr("isDragging",true)
+            }
+        })
+        shape.on("dragmove.transform_resize", () => {
+            if(shape.id() === store.selected) {
                 transform.resizeEnabled(false)
             }
         })
