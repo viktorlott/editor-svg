@@ -173,7 +173,7 @@ function DrawPen(stage, layer, setShapes, setMode) {
         max.y = lastPointerPosition.y
 
         lastLine = new Konva.Line({
-            stroke: 'black',
+            stroke: '#707070',
             strokeWidth: 3,
             globalCompositeOperation: 'source-over',
             points: [lastPointerPosition.x, lastPointerPosition.y],
@@ -401,7 +401,7 @@ function DrawShape(props) {
             fill: 'transparent'
         } : {
                 fill: '#ffffff',
-                stroke: "#000000",
+                stroke: "#707070",
                 strokeWidth: 1
         }
 
@@ -474,8 +474,8 @@ function DrawShape(props) {
 
             let shape = null
             if (store.mode === "TEXT") {
-                const text = new Konva.Text({ width: selectionRectangle.width(), x: selectionRectangle.x(), y: selectionRectangle.y(), fontSize: 24, fill: "black", enabledAnchors: ['middle-left', 'middle-right'] })
-                text.fontSize(24)
+                const text = new Konva.Text({ width: selectionRectangle.width(), x: selectionRectangle.x(), y: selectionRectangle.y(), fontSize: 24, fill: "#707070", enabledAnchors: ['middle-left', 'middle-right'] })
+                text.fontSize(Math.round(selectionRectangle.height()))
                 shape = JSON.parse(text.toJSON())
             } else if (store.mode === "IMAGE") {
 
@@ -510,6 +510,7 @@ function DrawShape(props) {
             shape.attrs.draggable = true
             shape.attrs.name = "object"
             shape.attrs.id = Math.random().toString(36).substring(2)
+
 
 
             setShapes(prev => [...prev, shape])

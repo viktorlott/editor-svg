@@ -68,6 +68,16 @@ function TextFormAttributes(props) {
     setAttrs({...selectedObject.attrs, fontFamily: selectedObject.fontFamily(), fill: selectedObject.fill() })
   }, [selectedObject, selectedObject.id(), stage])
 
+
+  const onChangeAlign = (e) => {
+
+    selectedObject.align(e.target.value)
+    if(selectedObject.parent) {
+      selectedObject.parent.draw()
+    }
+    updateAttrs()
+  }
+
   const onChangeFontFamily = (e) => {
 
     selectedObject.fontFamily(e.target.value)
@@ -114,14 +124,16 @@ function TextFormAttributes(props) {
 
   const optionsDataFontFamilies = [{ value: "Arial", label: "Arial"}, { value: "Helvetica", label: "Helvetica"}, { value: "sans-serif", label: "Sans-serif"}, { value: "Times", label: "Times"}]
   const optionsDataFontStyles = [{ value: "normal", label: "Normal"}, { value: "bold", label: "Bold"}, { value: "italic", label: "Italic"}]
+  const optionsDataAlign = [{ value: "left", label: "Vänster"}, { value: "center", label: "Mitten"}, { value: "right", label: "Höger"}]
 
 
   return (
     <AttributeSection>
           <InputForm onChange={onChangeSpecialText} value={attrs.specialText} width={"150px"} label={"Mall"} type="text"/>
           <OptionsForm onChange={onChangeFontFamily} label="Typsnitt" value={attrs.fontFamily}  selected={"Times"} width={"150px"} data={optionsDataFontFamilies} />
-          <InputForm onChange={onChangeFontSize} value={attrs.fontSize} width={"150px"} label={"Text storlek"} type="number"/>
-          <OptionsForm onChange={onChangeFontWeight} label={"Text tjocklek"} value={attrs.fontStyle} selected={"normal"} width={"150px"} data={optionsDataFontStyles} />
+          <InputForm onChange={onChangeFontSize} value={Math.round(attrs.fontSize)} width={"150px"} label={"Text storlek"} type="number"/>
+          <OptionsForm onChange={onChangeFontWeight} label={"Text-tjocklek"} value={attrs.fontStyle} selected={"normal"} width={"150px"} data={optionsDataFontStyles} />
+          <OptionsForm onChange={onChangeAlign} label="Text-justering" value={attrs.align}  selected={"left"} width={"150px"} data={optionsDataAlign} />
           <InputForm onChange={onChangeFontColor} value={attrs.fill} width={"150px"} height={"40px"} label={"Text färg"} type="color"/>
     </AttributeSection>
   )

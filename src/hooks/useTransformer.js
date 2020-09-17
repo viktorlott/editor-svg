@@ -256,10 +256,10 @@ function useTransformer(shape, layer, stage, attrs = {}) {
             transform.setZIndex(layer.children.length)
         })
         shape.on("transform", e => {
-
-            transform.padding(shape.strokeWidth() / 2)
-
-            shape.strokeWidth(shape.strokeWidth())
+            if(shape.className !== "Text") {
+                transform.padding(shape.strokeWidth() / 2)
+                shape.strokeWidth(shape.strokeWidth())
+            }
 
             if (e.target.className === "Transformer") {
                 return
@@ -288,7 +288,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
                 shape.setAttrs(attrs)
             }  else {
 
-                delete attrs["height"]
+
                 shape.setAttrs({
                     width: Math.max(shape.width() * shape.scaleX() * shape.scaleY(), 50), 
                     fontSize: Math.max(shape.fontSize() * shape.scaleY(), 6),

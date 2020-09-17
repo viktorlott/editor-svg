@@ -206,6 +206,7 @@ export const Input = styled.input`
 
   &::-webkit-inner-spin-button {
     border-radius: 5px;
+    display: none;
   }
 
   &::-webkit-color-swatch {
