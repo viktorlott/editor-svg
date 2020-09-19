@@ -11,7 +11,7 @@ import CursorIcon from './styles/cursor_normal'
 import InputColor from 'react-input-color';
 
 
-PDF2SVG.from().then(console.log)
+// PDF2SVG.from().then(console.log)
 
 function DisplayText(object, stage) {
   if(object) {
