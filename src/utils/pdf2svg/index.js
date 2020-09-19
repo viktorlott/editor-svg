@@ -1,4 +1,4 @@
-import pdfDoc from '../../spcmanual.pdf'
+// import pdfDoc from '../../spcmanual.pdf'
 
 const pdfjsLib = require("pdfjs-dist/lib/pdf")
 
@@ -22,15 +22,15 @@ class PDF2SVG {
 
     static from(data) {
         const pdf = new PDF2SVG(data)
-        const loadingTask = pdf.loadDocument()
+        const loadingTask = pdf.loadDocument(pdf)
         console.log(loadingTask)
         return pdf.extractSVG(loadingTask)
 
     }
 
-    loadDocument() {
+    loadDocument(pdf) {
         return pdfjsLib.getDocument({
-            url: pdfDoc,
+            url: pdf,
             cMapUrl: CMAP_URL,
             cMapPacked: CMAP_PACKED,
             fontExtraProperties: true,
