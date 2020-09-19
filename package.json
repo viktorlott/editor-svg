@@ -10,6 +10,7 @@
     "canvg": "^3.0.6",
     "chaikin-smooth": "^1.0.4",
     "konva": "^7.0.6",
+    "pdfjs-dist": "^2.5.207",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-input-color": "^3.0.1",

@@ -2,12 +2,16 @@ import React, { useEffect, useRef, useState, useCallback, useContext, useMemo, c
 import Konva from 'konva';
 import useTransformer from '../hooks/useTransformer'
 import getDragDirection from '../utils/getDragDirection'
+import PDF2SVG from '../utils/pdf2svg'
 import KonvaContext from '../context/konvacontext'
 import Structure from './Structure'
 import canvg from 'canvg'
 import { NavContainer, NavButton, Icon, StageContainer, CanvasWrapper, LeftSide, RightSide, SideMenu, SideMenuHeader, SideMenuParameters, Options, Input, AttributeSection, FormWrapper} from './styles'
 import CursorIcon from './styles/cursor_normal'
 import InputColor from 'react-input-color';
+
+
+PDF2SVG.from().then(console.log)
 
 function DisplayText(object, stage) {
   if(object) {
