@@ -904,7 +904,7 @@ function Stage(props) {
               <CursorIcon fill={store.mode === "HAND" ? "#579aff" : "#828282"}/>
               {/* <Icon type="fas fa-hand-paper" size="20px"/> */}
             </NavButton>
-            <NavButton onClick={setModeSignature} isSelected={store.mode === "SIGNATURE"}><Icon type="fas fa-signature" size="20px"/></NavButton>
+            {/* <NavButton onClick={setModeSignature} isSelected={store.mode === "SIGNATURE"}><Icon type="fas fa-signature" size="20px"/></NavButton> */}
             <NavButton  style={{width: 40, height: 40}} onClick={setModeText} isSelected={store.mode === "TEXT"}> <h3>T</h3>  </NavButton>
             <NavButton onClick={setModeRect} isSelected={store.mode === "RECT"}><Icon type="fas fa-vector-square" size="20px"/></NavButton>
             <div style={{margin: "0 50px"}}></div>
@@ -952,7 +952,7 @@ function Stage(props) {
                {selectedObject && (
                 <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 30}}>
 
-                  <NavButton style={{margin: 5, width: 150}} onClick={deleteObject}><Icon type="fas fa-trash" style={{color: "#ff3d3d"}} size="20px"/></NavButton>
+                  <NavButton style={{margin: 5, width: 150}} onClick={deleteObject}><Icon type="fas fa-trash" style={{color: "#ff8484"}} size="20px"/></NavButton>
                 </AttributeSection>
                )}
             </SideMenuParameters>
