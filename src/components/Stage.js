@@ -542,6 +542,9 @@ function Stage(props) {
             const { attrs, className: type } = object
 
             let shape = null
+            // if(type === "Text") {
+            //   shape = document.createElementNS(svgNS, "foreignObject")
+            // } else 
             if(type === "Image") {
               shape = document.createElementNS(svgNS, "foreignObject")
             } else if(type === "Line") {
@@ -591,13 +594,38 @@ function Stage(props) {
             }
             
             if(type.toLowerCase() === "text") {
+
+              // const text = document.createElementNS(svgNS, type.toLowerCase())
+
+              // for(let attr in attrs) {
+              //   if(attr === "width" || attr === "height" || attr === "x" || attr === "y" || attr === "dragBoundFunc") {
+
+              //   } else {
+              //     text.setAttribute(camel(attr), attrs[attr])  
+              //   }
+              // }
+
+            
               
-              shape.setAttribute("y", object.y() + 2)  
+              // shape.setAttribute("y", object.y() + 2)  
               shape.setAttribute("dominant-baseline", "hanging")  
               shape.setAttribute("font-family", object.fontFamily())  
 
+
+              // shape.setAttribute("y", object.y() + 2)  
+              // shape.setAttribute("dominant-baseline", "hanging")  
+              // shape.setAttribute("font-family", object.fontFamily())  
+
+
               const specialText = object.getAttr("specialText")
 
+              // if(specialText) {
+              //   text.textContent = specialText
+              // } else {
+              //   text.textContent = object.text()
+              // }
+
+              // shape.appendChild(text)
               if(specialText) {
                 shape.textContent = specialText
               } else {
@@ -613,9 +641,25 @@ function Stage(props) {
            
 
             shape.setAttribute("x", (object.x() * object.scaleX()) - offset / 2 )
-            shape.setAttribute("y", (object.y() * object.scaleY()) - offset / 2 )  
+            shape.setAttribute("y", ((object.y() * object.scaleY()) - offset / 2 ) + (type === "Text" ? 3 : 0))  
             
-            svg.appendChild(shape);
+
+            // if(type.toLowerCase() === "text") {
+            //   const textWrapper = document.createElementNS("","svg")
+            //   textWrapper.setAttribute("width", (object.width() * object.scaleX())   )
+            //   textWrapper.setAttribute("height", (object.height() * object.scaleY())  )
+
+            //   textWrapper.setAttribute("x", (object.x() * object.scaleX()) - offset / 2 )
+            //   textWrapper.setAttribute("y", (object.y() * object.scaleY()) - offset / 2 )  
+            //   shape.setAttribute("y", 0 )  
+            //   shape.setAttribute("y", 0)  
+
+            //   textWrapper.appendChild(shape)
+
+            //   svg.appendChild(textWrapper)
+            // } else {
+              svg.appendChild(shape);
+            // }
           }
           
           console.log(stage.toJSON())
