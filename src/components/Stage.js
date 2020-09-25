@@ -378,7 +378,7 @@ function ShapeSizeAttributes(props) {
 }
 
 
-function getDataUrl(img) {
+async function getDataUrl(img) {
 
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')
@@ -386,8 +386,13 @@ function getDataUrl(img) {
   canvas.width = img.width
   canvas.height = img.height
 
+
   ctx.drawImage(img, 0, 0)
-  return canvas.toDataURL('image/jpeg')
+
+  let blob = await fetch(img.src).then(r => r.blob())
+
+
+  return canvas.toDataURL(blob.type)
 }
 
 
@@ -523,11 +528,37 @@ function Stage(props) {
      
   
       setStage(stage)
+
+
+      // var scaleBy = 1.01;
+      // stage.on('wheel', (e) => {
+      //   e.evt.preventDefault();
+      //   var oldScale = stage.scaleX();
+
+      //   var pointer = stage.getPointerPosition();
+
+      //   var mousePointTo = {
+      //     x: (pointer.x - stage.x()) / oldScale,
+      //     y: (pointer.y - stage.y()) / oldScale,
+      //   };
+
+      //   var newScale =
+      //     e.evt.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+
+      //   stage.scale({ x: newScale, y: newScale });
+
+      //   var newPos = {
+      //     x: pointer.x - mousePointTo.x * newScale,
+      //     y: pointer.y - mousePointTo.y * newScale,
+      //   };
+      //   stage.position(newPos);
+      //   stage.batchDraw();
+      // });
   
     }, [])
 
     const exportStage = useCallback(
-      () => {
+      async () => {
         
         let sceneStage = stage.findOne("#background")
         let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
@@ -541,7 +572,7 @@ function Stage(props) {
         let svgNS = svg.namespaceURI
         let camel = (s) => s.replace(/[A-Z]/g, '-$&').toLowerCase()
         
-        function createElement(object) {
+        async function createElement(object) {
             const { attrs, className: type } = object
 
 
@@ -583,7 +614,7 @@ function Stage(props) {
 
               const img = document.createElement("img")
 
-              img.setAttribute("src", getDataUrl(object.attrs.image))
+              img.setAttribute("src", await getDataUrl(object.attrs.image))
 
               for(let attr in attrs) {
                 if(attr === "image" || attr === "dragBoundFunc") {
@@ -647,7 +678,7 @@ function Stage(props) {
 
             shape.setAttribute("x", (object.x() * object.scaleX()) - offset / 2 )
             shape.setAttribute("y", ((object.y() * object.scaleY()) - offset / 2 ) + (type === "Text" ? 3 : 0))  
-            
+            // preserveAspectRatio="xMinYMin meet"
 
             if(type.toLowerCase() === "text") {
 
@@ -708,12 +739,13 @@ function Stage(props) {
           }
           
           console.log(stage.toJSON())
+          
 
-        stage.find(".object").forEach(shape => {
-          if(shape.className !== "Transformer") {
-            createElement(shape)
+          for(let shape of stage.find(".object")) {
+            if(shape.className !== "Transformer") {
+              await createElement(shape)
+            }
           }
-        })
 
         let xmlSerializer = new XMLSerializer()
         let svgStr = xmlSerializer.serializeToString(svg)
