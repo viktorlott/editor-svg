@@ -10,7 +10,14 @@ import KonvaContext from './context/konvacontext'
 // "shadowBlur":10,"shadowOffsetX":5,"shadowOffsetY":5,"shadowOpacity":0.5,
 
 
-let json = {"attrs":{"width":794, "height":150},"className":"Stage","children":[{"attrs":{  },"className":"Layer","children":[]}]}
+let width = 794
+let height = 150
+let offset = 20
+
+
+let json = {"attrs":{"width":width, "height":height},"className":"Stage","children":[ 
+  {"attrs":{"width":width, "height": height, "x": 0, "y": 0},"className":"Layer","children":[]}
+]}
 // {"attrs":{"width":794,"height":1123},"className":"Stage","children":[{"attrs":{},"className":"Layer","children":[] }]}
 
 

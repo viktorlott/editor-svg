@@ -165,28 +165,32 @@ function drawGuides(guides, layer) {
     })
 }
 
+const transformerProps = {
+    resizeEnabled: false,
+    rotateEnabled: false,
+    anchorCornerRadius: 7,
+    anchorStrokeWidth: 1,
+    anchorSize: 7,
+    rotationSnaps: [0, 90, 180, 270],
+    borderStroke: "transparent",
+    borderStrokeWidth: 1,
+    rotateAnchorOffset: 30,
+    ignoreStroke: true,
+    strokeScaleEnabled: false,
+    isDragging: false,
+    // keepRatio: true,
+    // padding: shape.strokeWidth() / 2,
+}
+
 function useTransformer(shape, layer, stage, attrs = {}) {
     const { store } = useContext(KonvaContext)
 
     const transform = useMemo(() => new Konva.Transformer({
-        resizeEnabled: false,
-        rotateEnabled: false,
-        anchorCornerRadius: 7,
-        anchorStrokeWidth: 1,
-        anchorSize: 7,
-        rotationSnaps: [0, 90, 180, 270],
-        borderStroke: "transparent",
-        borderStrokeWidth: 1,
-        rotateAnchorOffset: 30,
-        ignoreStroke: true,
-        strokeScaleEnabled: false,
-        isDragging: false,
-        // keepRatio: true,
-        // padding: shape.strokeWidth() / 2,
+        ...transformerProps,
         ...attrs,
         id: shape.id() + "_transformer"
     }), [])
-    // #2ca7ff
+
     const toggleResizer = useCallback((val) => {
         transform.setAttr("resizeEnabled", val)
         transform.setAttr("borderStroke", val ? "#0099ff" : "transparent")
@@ -209,20 +213,23 @@ function useTransformer(shape, layer, stage, attrs = {}) {
     useEffect(() => {
         shape.dragDistance(3)
 
-        layer.add(shape)
-        layer.add(transform)
-        transform.nodes([shape])
+        // shape.offset({x: 50, y: 50})
 
-        if(shape.className === "Rect") {
-            transform.padding(shape.strokeWidth() / 2)
+        layer.add(shape)
+        console.log(attrs)
+        if(!attrs.disabled) {
+            layer.add(transform)
+    
+            transform.nodes([shape])
         }
 
+        if(shape.className === "Rect") {
+            // transform.padding(shape.strokeWidth() + 2)
+        }
 
-     
         shape.on('mouseover', function (e) {
 
             if (!transform.getAttr("resizeEnabled") && !transform.getAttr("isDragging")) {
-                // transform.setAttr("borderStroke", "#0099ff")
                 transform.setAttr("borderStroke", "#0099ff")
                 transform.setZIndex(layer.children.length)
                 layer.draw()
@@ -230,7 +237,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
         })
 
         shape.on('mouseout', function (e) {
-            console.log(transform.getAttr("isDragging"))
+
             if (!transform.getAttr("resizeEnabled")) {
                 transform.setAttr("borderStroke", "transparent")
                 layer.draw()
@@ -249,12 +256,14 @@ function useTransformer(shape, layer, stage, attrs = {}) {
                 transform.resizeEnabled(false)
             }
         })
+
         shape.on("transformend", () => {
             transform.setAttr("isDragging", false)
             transform.resizeEnabled(true)
             transform.setAttr("borderStroke", "#0099ff")
             transform.setZIndex(layer.children.length)
         })
+
         shape.on("transform", e => {
             if(shape.className !== "Text") {
                 transform.padding(shape.strokeWidth() / 2)
@@ -264,9 +273,9 @@ function useTransformer(shape, layer, stage, attrs = {}) {
             if (e.target.className === "Transformer") {
                 return
             }
+
             // clear all previous lines on the screen
             layer.find('.guid-line').destroy()
-
 
             // find possible snapping lines
             let lineGuideStops = getLineGuideStops(e.target, stage)
@@ -282,13 +291,11 @@ function useTransformer(shape, layer, stage, attrs = {}) {
                 height: Math.max(shape.height() * shape.scaleY(), 5),
                 scaleX: 1,
                 scaleY: 1,
-              }
+            }
 
             if(shape.className !== "Text") {
                 shape.setAttrs(attrs)
             }  else {
-
-
                 shape.setAttrs({
                     width: Math.max(shape.width() * shape.scaleX() * shape.scaleY(), 50), 
                     fontSize: Math.max(shape.fontSize() * shape.scaleY(), 6),
@@ -323,72 +330,10 @@ function useTransformer(shape, layer, stage, attrs = {}) {
 
             tempGuides.forEach((lg) => {
                 return false
-                switch (lg.snap) {
-                    case 'start': {
-                        switch (lg.orientation) {
-                            case 'V': {
-                                const x = +(lg.lineGuide + lg.offset).toFixed(4)
-                                if (Math.round(newBox.x) === Math.round(x)) break
-
-
-                                if (newBox.x + 2 >= x && newBox.x - 2 <= x) {
-
-                                    tempBox = { ...oldBox, width: oldBox.width + oldBox.x - x, x }
-                                }
-
-
-                                break
-                            }
-                            case 'H': {
-                                const y = +(lg.lineGuide + lg.offset).toFixed(4)
-
-                                if (Math.round(newBox.y) === Math.round(y)) break
-
-                                if (newBox.y + 2 >= y && newBox.y - 2 <= y) {
-
-                                    tempBox = { ...oldBox, height: oldBox.height + oldBox.y - y, y: y }
-                                }
-
-                                break
-                            }
-                        }
-                        break
-                    }
-                    case 'end': {
-                        switch (lg.orientation) {
-                            case 'V': {
-                                const width = +(lg.lineGuide - newBox.x).toFixed(4)
-
-                                if (Math.round(newBox.width) === Math.round(width)) break
-
-                                if (newBox.width + 2 >= width && newBox.width - 2 <= width) {
-
-                                    tempBox = { ...newBox, width }
-                                }
-                                break
-                            }
-                            case 'H': {
-
-                                const height = +(lg.lineGuide - newBox.y).toFixed(4)
-
-                                if (Math.round(newBox.height) === Math.round(height)) break
-
-                                if (newBox.height + 2 >= height && newBox.height - 2 <= height) {
-                                    tempBox = { ...newBox, height: height }
-                                }
-
-                            }
-                        }
-                        break
-                    }
-                }
+                
             })
 
-            // for(let key in tempBox) {
-            //     if(typeof tempBox[key] === "number") {
-            //         tempBox[key] = Math.round(tempBox[key])
-            //     }
-            // }
+         
 
             return tempBox
 
@@ -423,6 +368,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
         shape.on("dragstart.transform_resize", () => {
             if(shape.id() === store.selected) {
                 transform.setAttr("isDragging",true)
+                transform.setAttr("borderStroke", "transparent")
             }
         })
         shape.on("dragmove.transform_resize", () => {
@@ -435,6 +381,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
             if(shape.id() === store.selected) {
                 transform.resizeEnabled(true)
                 transform.setAttr("isDragging",false)
+                transform.setAttr("borderStroke", "#0099ff" )
             }
         })
 
@@ -453,3 +400,66 @@ function useTransformer(shape, layer, stage, attrs = {}) {
 
 
 export default useTransformer
+
+
+
+
+// switch (lg.snap) {
+//     case 'start': {
+//         switch (lg.orientation) {
+//             case 'V': {
+//                 const x = +(lg.lineGuide + lg.offset).toFixed(4)
+//                 if (Math.round(newBox.x) === Math.round(x)) break
+
+
+//                 if (newBox.x + 2 >= x && newBox.x - 2 <= x) {
+
+//                     tempBox = { ...oldBox, width: oldBox.width + oldBox.x - x, x }
+//                 }
+
+
+//                 break
+//             }
+//             case 'H': {
+//                 const y = +(lg.lineGuide + lg.offset).toFixed(4)
+
+//                 if (Math.round(newBox.y) === Math.round(y)) break
+
+//                 if (newBox.y + 2 >= y && newBox.y - 2 <= y) {
+
+//                     tempBox = { ...oldBox, height: oldBox.height + oldBox.y - y, y: y }
+//                 }
+
+//                 break
+//             }
+//         }
+//         break
+//     }
+//     case 'end': {
+//         switch (lg.orientation) {
+//             case 'V': {
+//                 const width = +(lg.lineGuide - newBox.x).toFixed(4)
+
+//                 if (Math.round(newBox.width) === Math.round(width)) break
+
+//                 if (newBox.width + 2 >= width && newBox.width - 2 <= width) {
+
+//                     tempBox = { ...newBox, width }
+//                 }
+//                 break
+//             }
+//             case 'H': {
+
+//                 const height = +(lg.lineGuide - newBox.y).toFixed(4)
+
+//                 if (Math.round(newBox.height) === Math.round(height)) break
+
+//                 if (newBox.height + 2 >= height && newBox.height - 2 <= height) {
+//                     tempBox = { ...newBox, height: height }
+//                 }
+
+//             }
+//         }
+//         break
+//     }
+// }

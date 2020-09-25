@@ -29,9 +29,11 @@ function Layer(props) {
 
   useEffect(() => {
     if(stage) {
+      // layer.offset({x: 50, y: 50})
       layer.on("mousedown.selecting", e => {
-        if(store.mode === "HAND") {
-          setSelected(e.target.id())
+        const id = e.target.id()
+        if(store.mode === "HAND" && id !== "background") {
+          setSelected(id)
         }
       })
     }

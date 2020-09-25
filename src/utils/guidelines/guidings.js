@@ -1,12 +1,26 @@
 import Konva from 'konva'
-
+import { width, height, offset } from '../config'
 
 
 // were can we snap our objects?
 export function getLineGuideStops(skipShape, stage) {
     // we can snap to stage borders and the center of the stage
-    let vertical = [0, stage.width() / 2, stage.width()]
-    let horizontal = [0, stage.height() / 2, stage.height()]
+
+    const sceneStage = stage.findOne("#background")
+    const sceneY = 0 + offset / 2
+    const sceneX = 0 + offset / 2
+
+    const centerHorizontal = (sceneStage.height() / 2) + sceneY
+    const centerVertical = (sceneStage.width() / 2) + sceneX
+
+    const sceneHeight = sceneStage.height() + sceneY
+    const sceneWidth = sceneStage.width() + sceneX
+
+    let vertical = [sceneY, centerVertical, sceneWidth]
+    let horizontal = [sceneX, centerHorizontal, sceneHeight]
+
+    // let vertical = [0, stage.width() / 2, stage.width()]
+    // let horizontal = [0, stage.height() / 2, stage.height()]
 
     // and we snap over edges and center of each object on the canvas
     stage.find('.object').forEach((guideItem) => {
@@ -263,12 +277,17 @@ export function getGuides(lineGuideStops, itemBounds) {
 
 // #ff4bc8
 export function drawGuides(guides, layer) {
+    const color = "#00EBFF" || '#0099ff'
+
+    const stage = layer.parent
+    const sceneStage = stage.findOne("#background")
 
     guides.forEach((lg) => {
         if (lg.orientation === 'H') {
             let line = new Konva.Line({
-                points: [-6000, lg.lineGuide, 6000, lg.lineGuide],
-                stroke: '#0099ff',
+                // points: [-6000, lg.lineGuide, 6000, lg.lineGuide],
+                points: [sceneStage.x(), lg.lineGuide, sceneStage.width() + sceneStage.x(), lg.lineGuide],
+                stroke: color,
                 strokeWidth: 1,
                 name: 'guid-line',
                 // dash: [4, 6],
@@ -278,8 +297,9 @@ export function drawGuides(guides, layer) {
         } else if (lg.orientation === 'V') {
 
             let line = new Konva.Line({
-                points: [lg.lineGuide, -6000, lg.lineGuide, 6000],
-                stroke: '#0099ff',
+                points: [lg.lineGuide, sceneStage.y(), lg.lineGuide, sceneStage.height() + sceneStage.y()],
+                // points: [lg.lineGuide, -6000, lg.lineGuide, 6000],
+                stroke: color,
                 strokeWidth: 1,
                 name: 'guid-line',
                 // dash: [4, 6],

@@ -9,7 +9,8 @@ import canvg from 'canvg'
 import { NavContainer, NavButton, Icon, StageContainer, CanvasWrapper, LeftSide, RightSide, SideMenu, SideMenuHeader, SideMenuParameters, Options, Input, AttributeSection, FormWrapper} from './styles'
 import CursorIcon from './styles/cursor_normal'
 import InputColor from 'react-input-color';
-
+import { width, height, offset } from '../utils/config'
+import CodeMirrorInput from './compact/Input' 
 
 // PDF2SVG.from().then(console.log)
 
@@ -364,7 +365,6 @@ function ShapeSizeAttributes(props) {
   return (
     <AttributeSection>
         <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 0, flexFlow: "row"}}>
-
           <InputForm onChange={onChangeWidth} value={Math.round(attrs.width)} width={"75px"} height={"40px"} style={{fontSize: "14px"}} label={"Bredd"} type="number"/>
           {!props.hideHeight && <InputForm onChange={onChangeHeight} value={Math.round(attrs.height)} width={"75px"} height={"40px"} style={{fontSize: "14px"}} label={"Höjd"} type="number"/>}
         </AttributeSection>
@@ -390,6 +390,9 @@ function getDataUrl(img) {
 }
 
 
+
+
+
 function Stage(props) {
     const [stage, setStage] = useState(null)
     
@@ -406,8 +409,12 @@ function Stage(props) {
     useEffect(() => {
       if(stage) {
         stage.on("click.selecting", (e) => {
-          if(store.mode === "HAND") {
+          const id = e.target.id()
+          if(store.mode === "HAND" && id !== "background") {
             setSelected(e.target.id())
+          }
+          if(id === "background") {
+            setSelected(null)
           }
         })
       }
@@ -423,21 +430,82 @@ function Stage(props) {
     
     const canvasCB = useCallback((ref) => {
       const { attrs={} } = props
+      
+      
+     
+
+
       const stage = new Konva.Stage({
+        ...attrs,
         container: ref,
-        width: 794,
-        // height: 1123,
-        height: 150,
         pixelRatio: 4,
-        ...attrs
+        width: width,
+        height: height
        
       })
 
       currRef.current = ref
+
+
+
+      const backgroundLayer = new Konva.Layer({
+        width,
+        height, 
+        x: 0, 
+        y: 0
+      })
+
+      const backgroundRect = new Konva.Rect({
+        width: width - offset, 
+        height: height - offset, 
+        x: offset / 2, 
+        y: offset / 2, 
+        fill: "#fff", 
+        name: "background", 
+        id: "background", 
+        stroke: "#ccc", 
+        strokeWidth: 1
+      })
+
+      const backgroundText = new Konva.Text({
+        width:78,
+        x:25,
+        y:14,
+        fontSize:10,
+        fill:"#a8a8a8",
+        enabledAnchors:["middle-left","middle-right"],
+        text:"Scen"
+      })
       
-      // stage.on("click", (e) => {
-      //   setSelected(e.target.id())
-      // })
+      const backgroundWidthText = new Konva.Text({
+        width:50,
+        x:397,
+        y:12,
+        fontSize:10,
+        fill:"#a8a8a8",
+        enabledAnchors:["middle-left","middle-right"],
+        text: width - offset,
+        align:"center"
+      })
+
+      const backgroundHeightText = new Konva.Text({
+        width:29,
+        x:815,
+        y:95,
+        fontSize:10,
+        fill:"#a8a8a8",
+        enabledAnchors:["middle-left","middle-right"],
+        text: height - offset,
+        align:"center"
+      })
+
+      backgroundLayer.add(backgroundRect)
+      backgroundLayer.add(backgroundText)
+      backgroundLayer.add(backgroundWidthText)
+      backgroundLayer.add(backgroundHeightText)
+
+      stage.add(backgroundLayer)
+
 
       window.document.addEventListener("click", e => {
         console.log(document.querySelector("#rightside").contains(e.target))
@@ -457,9 +525,11 @@ function Stage(props) {
     const exportStage = useCallback(
       () => {
         
+        let sceneStage = stage.findOne("#background")
         let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("width", stage.width() * stage.scaleX())
-        svg.setAttribute("height", stage.height() * stage.scaleY())
+
+        svg.setAttribute("width", sceneStage.width() * sceneStage.scaleX())
+        svg.setAttribute("height", sceneStage.height() * sceneStage.scaleY())
 
 
         let svgNS = svg.namespaceURI;
@@ -487,9 +557,10 @@ function Stage(props) {
             }
 
 
+            shape.setAttribute("x", (object.x() * object.scaleX()) - offset / 2 )
+            shape.setAttribute("y", (object.y() * object.scaleY()) - offset / 2 )  
             
-            
-            shape.setAttribute("width", (object.width() * object.scaleX()) )
+            shape.setAttribute("width", (object.width() * object.scaleX()))
             shape.setAttribute("height", (object.height() * object.scaleY()))  
 
 
@@ -503,8 +574,8 @@ function Stage(props) {
                 img.setAttribute(camel(attr), attrs[attr])  
               }
 
-              img.setAttribute("width", (object.width() * object.scaleX()) )
-              img.setAttribute("height", (object.height() * object.scaleY()))
+              img.setAttribute("width", (object.width() * object.scaleX())   )
+              img.setAttribute("height", (object.height() * object.scaleY())  )
               shape.appendChild(img)
             }
             
@@ -662,6 +733,8 @@ function Stage(props) {
 
         <div style={{margin: "auto"}}>
           <textarea type="text" style={{ width: "300px", height: "200px", border: "1px solid rgba(0,0,0,0.3)", outline: "none", resize: "none", borderRadius: 3}} width="200px"  ref={textboxRef}/>
+
+          {/* <CodeMirrorInput />   */}
         </div>
 
         <RightSide id="rightside">
@@ -681,6 +754,8 @@ function Stage(props) {
                         <NavButton onClick={moveDown} style={{padding: 7, width: 50}}><Icon type="fas fa-angle-down" size="20px"/></NavButton>
                 </AttributeSection>
                )}
+
+               
                {selectedObject && (
                 <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 30}}>
 

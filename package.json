@@ -9,6 +9,7 @@
     "antd": "^4.6.1",
     "canvg": "^3.0.6",
     "chaikin-smooth": "^1.0.4",
+    "codemirror": "^5.58.1",
     "konva": "^7.0.6",
     "pdfjs-dist": "^2.5.207",
     "react": "^16.13.1",

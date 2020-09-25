@@ -94,7 +94,7 @@ export function createDistanceGuideLine({orientation, x1, y1, x2, y2, lineColor,
   
     if(orientation === "H") {
       text.x((x1) + (line.width() / 2) - text.width() / 2)
-      text.y(y2 + alignOffset + textOffset)
+      text.y(y2 - alignOffset - textOffset - text.height())
     } else if(orientation === "V") {
       text.y((y1) + (line.height() / 2) - text.height() / 2)
       text.x(x2 + alignOffset + textOffset)
@@ -112,10 +112,10 @@ export function createDistanceGuideLine({orientation, x1, y1, x2, y2, lineColor,
   
     let offsetEvent = 0
     let minDelta = 5
-    let lineColor = '#ff26a9'
+    let lineColor = '#FF00C4' || '#00F5FF' || '#ff26a9'
     let wallSize = 0
     let alignOffset = 0
-    let textOffset = 4
+    let textOffset = 5
     let LineSpace = 0
   
   

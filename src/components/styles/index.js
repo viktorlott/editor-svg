@@ -79,9 +79,9 @@ export const CanvasWrapper = styled.div`
      & canvas {
         border-radius: 2px;
         /* border: 2px solid #e6e6e6; */
-        background-color: white!important;
-        border: 2px solid #dadada!important;
-        box-shadow: 0px 0px 6px 1px rgba(0,0,0,0.05);
+        /* background-color: white!important; */
+        border: 1px solid #dadada!important;
+        /* box-shadow: 0px 0px 6px 1px rgba(0,0,0,0.05); */
      }
 
 `

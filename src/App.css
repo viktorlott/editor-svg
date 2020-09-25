@@ -40,10 +40,47 @@
 
 body {
   background-color: #efefef;
-  overflow: hidden;
+  /* overflow: hidden;
   position: fixed;
 
   margin: 0;
-  padding: 0;
+  padding: 0; */
   
 }
+
+
+
+.CodeMirror-hint-active {
+    background: #08f;
+    color: white;
+
+    
+  }
+
+.CodeMirror-hint {
+  font-weight: bold;
+  padding: 5px 10px!important;
+}
+
+
+
+.table.CodeMirror-hint {
+  font-weight: bold;
+  color: black;
+  padding: 40px!important;
+  }
+
+  .column.CodeMirror-hint {
+  font-weight: bold;
+  color: black;
+  }
+
+  .keyword.CodeMirror-hint {
+  font-weight: bold;
+  color: #BF00FF;
+  }
+
+  .builtin.CodeMirror-hint {
+  font-weight: bold;
+  color: #2E64FE;
+  }
