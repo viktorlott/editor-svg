@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback, useContext, useMemo, createContext, useReducer, forwardRef} from 'react'
-import Konva from 'konva';
+import Konva from 'konva'
 import useTransformer from '../hooks/useTransformer'
 import getDragDirection from '../utils/getDragDirection'
 import PDF2SVG from '../utils/pdf2svg'
@@ -8,19 +8,20 @@ import Structure from './Structure'
 import canvg from 'canvg'
 import { NavContainer, NavButton, Icon, StageContainer, CanvasWrapper, LeftSide, RightSide, SideMenu, SideMenuHeader, SideMenuParameters, Options, Input, AttributeSection, FormWrapper} from './styles'
 import CursorIcon from './styles/cursor_normal'
-import InputColor from 'react-input-color';
+import InputColor from 'react-input-color'
 import { width, height, offset } from '../utils/config'
 import CodeMirrorInput from './compact/Input' 
+import { SVG } from '@svgdotjs/svg.js'
 
 // PDF2SVG.from().then(console.log)
 
 function DisplayText(object, stage) {
   if(object) {
     switch(object.className) {
-      case "Rect": return "Rektangel";
-      case "Text": return "Text";
-      case "Image": return "Bild";
-      case "Line": return "Signatur";
+      case "Rect": return "Rektangel"
+      case "Text": return "Text"
+      case "Image": return "Bild"
+      case "Line": return "Signatur"
       default: return null
     }
   }
@@ -248,7 +249,7 @@ function ShapeSizeAttributes(props) {
           height: Math.max(shape.height() * shape.scaleY(), 5),
           scaleX: 1,
           scaleY: 1,
-        });
+        })
         
       }
     }
@@ -267,32 +268,32 @@ function ShapeSizeAttributes(props) {
           switch(e.keyCode) {
             case 37: 
               node.width(node.width() - jump) 
-              break;
+              break
             case 38:
               node.height(node.height() - jump) 
-              break;
+              break
             case 39: 
               node.width(node.width() + jump) 
-              break;
+              break
             case 40:
               node.height(node.height() + jump) 
-              break;
+              break
           }
 
         } else {
           switch(e.keyCode) {
             case 37: 
               node.x(node.x() - jump) 
-              break;
+              break
             case 38:
               node.y(node.y() - jump) 
-              break;
+              break
             case 39: 
               node.x(node.x() + jump) 
-              break;
+              break
             case 40:
               node.y(node.y() + jump) 
-              break;
+              break
           }
         }
 
@@ -379,14 +380,14 @@ function ShapeSizeAttributes(props) {
 
 function getDataUrl(img) {
 
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
 
-  canvas.width = img.width;
-  canvas.height = img.height;
+  canvas.width = img.width
+  canvas.height = img.height
 
-  ctx.drawImage(img, 0, 0);
-  return canvas.toDataURL('image/jpeg');
+  ctx.drawImage(img, 0, 0)
+  return canvas.toDataURL('image/jpeg')
 }
 
 
@@ -529,17 +530,21 @@ function Stage(props) {
       () => {
         
         let sceneStage = stage.findOne("#background")
-        let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+
+        const svgContainer = SVG()
 
         svg.setAttribute("width", sceneStage.width() * sceneStage.scaleX())
         svg.setAttribute("height", sceneStage.height() * sceneStage.scaleY())
 
 
-        let svgNS = svg.namespaceURI;
+        let svgNS = svg.namespaceURI
         let camel = (s) => s.replace(/[A-Z]/g, '-$&').toLowerCase()
         
         function createElement(object) {
             const { attrs, className: type } = object
+
+
 
             let shape = null
             // if(type === "Text") {
@@ -644,22 +649,62 @@ function Stage(props) {
             shape.setAttribute("y", ((object.y() * object.scaleY()) - offset / 2 ) + (type === "Text" ? 3 : 0))  
             
 
-            // if(type.toLowerCase() === "text") {
-            //   const textWrapper = document.createElementNS("","svg")
-            //   textWrapper.setAttribute("width", (object.width() * object.scaleX())   )
-            //   textWrapper.setAttribute("height", (object.height() * object.scaleY())  )
+            if(type.toLowerCase() === "text") {
 
-            //   textWrapper.setAttribute("x", (object.x() * object.scaleX()) - offset / 2 )
-            //   textWrapper.setAttribute("y", (object.y() * object.scaleY()) - offset / 2 )  
-            //   shape.setAttribute("y", 0 )  
-            //   shape.setAttribute("y", 0)  
+              const container = document.createElementNS(svgNS, "foreignObject")
+              const group = document.createElementNS(svgNS, "g")
+              const svgChild = document.createElementNS(svgNS, "svg")
+              const text = document.createElement("div")
 
-            //   textWrapper.appendChild(shape)
 
-            //   svg.appendChild(textWrapper)
-            // } else {
-              svg.appendChild(shape);
-            // }
+              group.appendChild(svgChild)
+              svgChild.appendChild(shape)
+
+              container.setAttribute("x", ((object.x() * object.scaleX()) - offset / 2 ) - 0.5)
+              container.setAttribute("y", ((object.y() * object.scaleY()) - offset / 2) - 1 )  
+              container.setAttribute("width", (object.width() * object.scaleX())   )
+              container.setAttribute("height", (object.height() * object.scaleY())  )
+
+
+              text.style["height"] = object.height() + "px"
+              text.style["width"] = object.width() + "px"
+              text.style["word-break"] = "break-word"
+
+
+              text.style.fontSize = object.fontSize() + 'px'
+              text.style.border = 'none'
+              text.style.padding = '0px'
+              text.style.margin = '0px'
+              text.style.float = "left"
+              text.style.overflow = 'hidden'
+              text.style.background = 'none'
+              text.style.outline = 'none'
+              text.style.resize = 'none'
+              text.style.lineHeight = object.lineHeight()
+              text.style.fontFamily = object.fontFamily()
+      
+              text.style.transformOrigin = 'left top'
+              text.style.textAlign = object.align()
+              text.style.color = object.fill()
+
+            
+
+              container.appendChild(text)
+
+              const specialText = object.getAttr("specialText")
+
+      
+            if(specialText) {
+              text.textContent = specialText
+            } else {
+              text.textContent = object.text()
+            }
+
+
+             svg.appendChild(container)
+            } else {
+              svg.appendChild(shape)
+            }
           }
           
           console.log(stage.toJSON())
