@@ -12,7 +12,7 @@ import InputColor from 'react-input-color'
 import { width, height, offset } from '../utils/config'
 import CodeMirrorInput from './compact/Input' 
 import { SVG } from '@svgdotjs/svg.js'
-
+import {HCenter,HLeft,HRight,VBottom,VCenter,VTop } from './styles/alignIcons'
 // PDF2SVG.from().then(console.log)
 
 function DisplayText(object, stage) {
@@ -150,6 +150,9 @@ function TextFormAttributes(props) {
 function getRectAttrs(selectedObject) {
   return {...selectedObject.attrs, width: selectedObject.width(), height: selectedObject.height(), fill: selectedObject.fill(), stroke: selectedObject.stroke(), strokeWidth: selectedObject.strokeWidth(), cornerRadius: selectedObject.cornerRadius() }
 }
+
+
+
 
 function RectFormAttributes(props) {
   const { stage, selectedObject } = props
@@ -363,6 +366,47 @@ function ShapeSizeAttributes(props) {
     updateAttrs()
   },[selectedObject.id()])
 
+
+  const alignObject = useCallback(type => e => {
+    const layer = selectedObject.parent
+    const stage = layer.parent
+
+    
+    if(stage) {
+      const background = stage.findOne("#background")
+
+      switch(type) {
+        case "hleft": 
+          selectedObject.x(background.x())
+          break;
+
+        case "hcenter": 
+          selectedObject.x(background.x() + (background.width() / 2) - (selectedObject.width() / 2))
+          break
+          
+        case "hright": 
+          selectedObject.x(background.x() + (background.width() - selectedObject.width()))
+          break
+          
+        case "vtop": 
+          selectedObject.y(background.y())
+          break
+          
+        case "vcenter": 
+          selectedObject.y(background.y() + (background.height() / 2) - (selectedObject.height() / 2) )
+          break
+
+        case "vbottom": 
+          selectedObject.y(background.y() + (background.height() - selectedObject.height()))
+          break
+          
+      }
+    }
+
+    selectedObject.parent.draw()
+    updateAttrs()
+  },[selectedObject.id()])
+
   return (
     <AttributeSection>
         <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 0, flexFlow: "row"}}>
@@ -372,6 +416,17 @@ function ShapeSizeAttributes(props) {
         <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 0, flexFlow: "row"}}>
           <InputForm onChange={onChangeX} value={Math.round(attrs.x)} width={"75px"} height={"40px"} style={{fontSize: "14px"}} label={"X"} type="number"/>
           <InputForm onChange={onChangeY} value={Math.round(attrs.y)} width={"75px"} height={"40px"} style={{fontSize: "14px"}} label={"Y"} type="number"/>
+        </AttributeSection>
+
+        <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 20, flexFlow: "row"}}>
+            <NavButton onClick={alignObject("hleft")} style={{padding: 9}}><HLeft size="20px"/></NavButton>
+            <NavButton onClick={alignObject("hcenter")} style={{padding: 9}}><HCenter size="20px"/></NavButton>
+            <NavButton onClick={alignObject("hright")} style={{padding: 9}}><HRight size="20px"/></NavButton>
+        </AttributeSection>
+        <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 10, flexFlow: "row"}}>
+            <NavButton onClick={alignObject("vtop")} style={{padding: 9}}><VTop  size="20px"/></NavButton>
+            <NavButton onClick={alignObject("vcenter")} style={{padding: 9}}><VCenter size="20px"/></NavButton>
+            <NavButton onClick={alignObject("vbottom")} style={{padding: 9}}><VBottom size="20px"/></NavButton>
         </AttributeSection>
     </AttributeSection>
   )
@@ -692,7 +747,7 @@ function Stage(props) {
               svgChild.appendChild(shape)
 
               container.setAttribute("x", ((object.x() * object.scaleX()) - offset / 2 ) - 0.5)
-              container.setAttribute("y", ((object.y() * object.scaleY()) - offset / 2) - 1 )  
+              container.setAttribute("y", ((object.y() * object.scaleY()) - offset / 2) - 1)  
               container.setAttribute("width", (object.width() * object.scaleX())   )
               container.setAttribute("height", (object.height() * object.scaleY())  )
 

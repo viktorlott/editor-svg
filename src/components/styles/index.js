@@ -26,6 +26,10 @@ export const NavButton = styled.button`
     align-items: center;
     transition: background 0.2s;
 
+    > path {
+      fill: #989898!important;
+    }
+
     > h3 {
         transition: color 0.2s;
         margin: 0;
@@ -108,6 +112,9 @@ export const SideMenu = styled.div`
      grid-template-rows: 100px 1fr;
      grid-column: 2/3;
      grid-row: 1/ last-line;
+     /* background: #efefef;
+     border-left: 1px solid #ccc; */
+     z-index: 1;
 `
 
 
