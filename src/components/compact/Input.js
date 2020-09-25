@@ -16,10 +16,16 @@ import "codemirror/mode/markdown/markdown"
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/monokai.css'
 
+import 'codemirror/mode/htmlmixed/htmlmixed'
+
+import Beautify from 'js-beautify'
 
 
 
-function CodeMirror() {
+
+
+
+function CodeMirror(props) {
     const [codem, setState] = useState(null)
     const codemirrorRef = useRef()
 
@@ -47,15 +53,12 @@ function CodeMirror() {
                         while (end < line.length && /\w/.test(line.charAt(end))) ++end
                         var word = line.slice(start, end).toLowerCase()
                         for (var i = 0; i < comp.length; i++) if (comp[i].indexOf(word) != -1)
+                        
                             return accept({
                                 list: comp[i],
                                 from: Codemirror.Pos(cursor.line, start),
                                 to: Codemirror.Pos(cursor.line, end),
                                 className: "codemirror-custom-hints",
-                                render(Element, self, data) {
-                                    console.log(Element, self, data)
-                                    return "<div>hello</div>"
-                                }
                             })
                         return accept(null)
                     }, 100)
@@ -66,22 +69,20 @@ function CodeMirror() {
             const cm = Codemirror(codemirrorRef.current, {
                 value: "",
                 extraKeys: { "Ctrl-Space": "autocomplete" },
-                lineNumbers: true,
                 lineWrapping: true,
-                mode: 'javascript',
+                mode:  "htmlmixed",
+                htmlMode: true,
                 theme: 'monokai'
             })
 
-
             Codemirror.commands.autocomplete = function (cm) {
                 cm.showHint({ hint: synonyms });
-
             }
 
             cm.on("keyup", function (editor) {
                 let containerShowHint = document.body;
                 if (!editor.state.completionActive) {
-                    Codemirror.commands.autocomplete(editor, null, {completeSingle: false,container: containerShowHint});
+                    Codemirror.commands.autocomplete(editor, null, {completeSingle: false, container: containerShowHint, });
                 }
             });
        
@@ -93,24 +94,12 @@ function CodeMirror() {
     useEffect(() => {
         if (!codem) return
 
-    
-        codem.setOption("extraKeys", {
-            Tab: function(cm) {
-              var spaces = Array(cm.getOption("indentUnit") + 1).join(" ")
-              cm.replaceSelection(spaces)
-            }
-        })
+        if(props.text) {
+            const doc = codem.getDoc()
+            codem.replaceRange(Beautify.html(props.text, { indent_size: 2 }), { line: 0, ch: 0}, { line: doc.lineCount()})
+        }
 
-        codem.setSize(200, codem.defaultTextHeight() + 2 * 4);
-
-        codem.on("beforeChange", function(instance, change) {
-            var newtext = change.text.join("").replace(/\n/g, ""); // remove ALL \n !
-            change.update(change.from, change.to, [newtext]);
-            return true;
-        });
-
-
-    }, [codem])
+    }, [codem, props.text])
 
 
     return (

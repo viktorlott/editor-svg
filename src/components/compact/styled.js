@@ -8,7 +8,7 @@ export const GlobalStyles = createGlobalStyle`
 
 
 export const CodeMirrorWrapper = styled.div`
-
+    width: 500px!important;
     .CodeMirror-hscrollbar {
         display: none!important;
     }

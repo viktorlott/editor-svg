@@ -402,6 +402,8 @@ function Stage(props) {
     const selectedObject = useMemo(() => getSelectedObject(store.selected, stage), [stage, store.selected])
     const currRef = useRef()
     const textboxRef = useRef()
+    const [svgText, setSvgText] = useState("")
+
     
 
     
@@ -469,29 +471,30 @@ function Stage(props) {
 
       const backgroundText = new Konva.Text({
         width:78,
-        x:25,
-        y:14,
+        x:offset / 2,
+        y: (offset / 2) - 10 - 1,
         fontSize:10,
         fill:"#a8a8a8",
         enabledAnchors:["middle-left","middle-right"],
         text:"Scen"
       })
       
+
+
       const backgroundWidthText = new Konva.Text({
         width:50,
-        x:397,
-        y:12,
+        x: (width / 2) - 50 / 2,
+        y: (offset / 2) - 13,
         fontSize:10,
         fill:"#a8a8a8",
-        enabledAnchors:["middle-left","middle-right"],
         text: width - offset,
         align:"center"
       })
 
       const backgroundHeightText = new Konva.Text({
-        width:29,
-        x:815,
-        y:95,
+        width:50,
+        x:width - (50 / 2) - (offset / 2) + 11,
+        y: (height / 2) -(10 / 2),
         fontSize:10,
         fill:"#a8a8a8",
         enabledAnchors:["middle-left","middle-right"],
@@ -547,9 +550,14 @@ function Stage(props) {
             } else {
               shape = document.createElementNS(svgNS, type.toLowerCase())
             }
+
+
+            
             
             for(let attr in attrs) {
-              if(attr === "points") {
+              if(attr === "image" || attr === "dragBoundFunc") {
+
+              } else if(attr === "points") {
                 shape.setAttribute(camel(attr), attrs[attr].join(","))  
               } else {
                 shape.setAttribute(camel(attr), attrs[attr])  
@@ -557,8 +565,7 @@ function Stage(props) {
             }
 
 
-            shape.setAttribute("x", (object.x() * object.scaleX()) - offset / 2 )
-            shape.setAttribute("y", (object.y() * object.scaleY()) - offset / 2 )  
+          
             
             shape.setAttribute("width", (object.width() * object.scaleX()))
             shape.setAttribute("height", (object.height() * object.scaleY()))  
@@ -571,7 +578,11 @@ function Stage(props) {
               img.setAttribute("src", getDataUrl(object.attrs.image))
 
               for(let attr in attrs) {
-                img.setAttribute(camel(attr), attrs[attr])  
+                if(attr === "image" || attr === "dragBoundFunc") {
+
+                } else {
+                  img.setAttribute(camel(attr), attrs[attr])  
+                }
               }
 
               img.setAttribute("width", (object.width() * object.scaleX())   )
@@ -598,6 +609,11 @@ function Stage(props) {
               shape.setAttribute("stroke", "black")  
               shape.setAttribute("fill", "none")  
             }
+
+           
+
+            shape.setAttribute("x", (object.x() * object.scaleX()) - offset / 2 )
+            shape.setAttribute("y", (object.y() * object.scaleY()) - offset / 2 )  
             
             svg.appendChild(shape);
           }
@@ -624,8 +640,9 @@ function Stage(props) {
           console.log(err)
         }
 
-        textboxRef.current.value = svgStr
-     
+        // textboxRef.current.value = svgStr
+
+        setSvgText(svgStr)
       },
       [stage],
     )
@@ -732,9 +749,9 @@ function Stage(props) {
         </CanvasWrapper>
 
         <div style={{margin: "auto"}}>
-          <textarea type="text" style={{ width: "300px", height: "200px", border: "1px solid rgba(0,0,0,0.3)", outline: "none", resize: "none", borderRadius: 3}} width="200px"  ref={textboxRef}/>
+          {/* <textarea type="text" style={{ width: "300px", height: "200px", border: "1px solid rgba(0,0,0,0.3)", outline: "none", resize: "none", borderRadius: 3}} width="200px"  ref={textboxRef}/> */}
 
-          {/* <CodeMirrorInput />   */}
+          <CodeMirrorInput text={svgText} />  
         </div>
 
         <RightSide id="rightside">
