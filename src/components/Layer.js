@@ -151,6 +151,7 @@ function Layer(props) {
     
   
         guides.forEach((lg) => {
+          console.log(lg)
           switch (lg.snap) {
             case 'start': {
               switch (lg.orientation) {
@@ -172,7 +173,7 @@ function Layer(props) {
             case 'center': {
               switch (lg.orientation) {
                 case 'V': {
-                  !lg.disabled && e.target.x(lg.lineGuide + lg.offset)
+                  !lg.disabled && e.target.x(lg.lineGuide + lg.offset )
                   !lg.disabled && drawGuides(guides, layer)
                   !lg.disabled && drawRelativeGuideLines(relatives, e.target, layer, guides, lg )
                   break

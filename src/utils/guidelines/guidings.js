@@ -1,5 +1,7 @@
 import Konva from 'konva'
 import { width, height, offset } from '../config'
+import { isOnLeftSide, isOnRightSide, isOnTopSide, isOnBottomSide, getBoundingBoxes } from './relations'
+
 
 
 // were can we snap our objects?
@@ -30,9 +32,10 @@ export function getLineGuideStops(skipShape, stage) {
         }
 
         let box = guideItem.getClientRect()
+        console.log(guideItem.strokeWidth())
         // and we can snap to all edges of shapes
-        vertical.push([box.x, box.x + box.width, box.x + box.width / 2])
-        horizontal.push([box.y, box.y + box.height, box.y + box.height / 2])
+        vertical.push([box.x + 0, box.x + box.width - 0, box.x + box.width / 2])
+        horizontal.push([box.y + 0, box.y + box.height - 0, box.y + box.height / 2])
     })
 
     return {
@@ -41,7 +44,10 @@ export function getLineGuideStops(skipShape, stage) {
     }
 }
 
-
+// (guideItem.strokeWidth && guideItem.strokeWidth() % 2 === 0 ? 0 : 1)
+// (guideItem.strokeWidth && guideItem.strokeWidth() % 2 === 0 ? 0 : 1)
+// (guideItem.strokeWidth && guideItem.strokeWidth() % 2 === 0 ? 0 : 1)
+// (guideItem.strokeWidth && guideItem.strokeWidth() % 2 === 0 ? 0 : 1)
 
 export function getLineGuideStops2(skipShape, stage) {
     let vertical = [{ id: "stage", point: 0 }, { id: "stage", point: stage.width() / 2 }, { id: "stage", point: stage.width() }]
@@ -136,49 +142,53 @@ export function getGuides2(lineGuideStops, itemBounds) {
 
 
 export function getObjectSnappingEdges(node) {
+    let skippedTransformBox = node.getClientRect({ skipTransform: true})
 
     let box = node.getClientRect()
+    let absPos = node.absolutePosition()
+
+    
     return {
         vertical: [
             {
-                guide: Math.round(box.x),
-                offset: Math.round(node.x() - box.x),
+                guide: (box.x),
+                offset: (absPos.x - box.x),
                 snap: 'start',
-                box,
+                boundingbox: box,
             },
             {
-                guide: Math.round(box.x + box.width / 2),
-                offset: Math.round(node.x() - box.x - box.width / 2),
+                guide: (box.x + box.width / 2),
+                offset: (absPos.x - box.x - box.width / 2),
                 snap: 'center',
-                box,
+                boundingbox: box,
             },
             {
-                guide: Math.round(box.x + box.width),
-                offset: Math.round(node.x() - box.x - box.width),
+                guide: (box.x + box.width),
+                offset: (absPos.x - box.x - box.width),
                 snap: 'end',
-                box,
+                boundingbox: box,
             },
         ],
         horizontal: [
             {
-                guide: Math.round(box.y),
-                offset: Math.round(node.y() - box.y),
+                guide: (box.y),
+                offset: (absPos.y - box.y),
                 snap: 'start',
-                box,
+                boundingbox: box,
             },
             {
-                guide: Math.round(box.y + box.height / 2),
-                offset: Math.round(node.y() - box.y - box.height / 2),
+                guide: (box.y + box.height / 2),
+                offset: (absPos.y - box.y - box.height / 2),
                 snap: 'center',
-                box,
+                boundingbox: box,
             },
             {
-                guide: Math.round(box.y + box.height),
-                offset: Math.round(node.y() - box.y - box.height),
+                guide: (box.y + box.height),
+                offset: (absPos.y - box.y - box.height),
                 snap: 'end',
-                box,
+                boundingbox: box,
             },
-        ],
+        ]
     }
 }
 
@@ -283,6 +293,7 @@ export function drawGuides(guides, layer) {
     const sceneStage = stage.findOne("#background")
 
     guides.forEach((lg) => {
+
         if (lg.orientation === 'H') {
             let line = new Konva.Line({
                 // points: [-6000, lg.lineGuide, 6000, lg.lineGuide],
@@ -308,4 +319,303 @@ export function drawGuides(guides, layer) {
             layer.batchDraw()
         }
     })
+}
+
+
+function smallestDistance(a, b) {
+    try {
+      return  a.delta <= b.delta ? a : b
+    } catch(err) {
+      console.log(a, b, err)
+      return a
+    }
+  }
+
+
+class GuideLines {
+
+    static get(node, objects, constraints, skipShape) {
+        const guideLines = new GuideLines()
+        const lineGuideStops = guideLines.getLineGuideStops(objects, constraints, skipShape)
+        const itemBounds = guideLines.getObjectSnappingEdges(node)
+        const guides = guideLines.getGuides(lineGuideStops, itemBounds, constraints.threshold)
+        return guides
+    }
+
+    vector(object, vector) {
+        return { id: object.id, guideline: vector, boundingbox: { width: object.width, height: object.height, x: object.x, y: object.y }}
+    }
+
+    getLineGuideStops(objects, constraints, skipShape) {
+
+        const { offsetY, offsetX, width, height } = constraints
+        // we can snap to stage borders and the center of the stage
+    
+        const sceneY = 0 + offsetY / 2
+        const sceneX = 0 + offsetX / 2
+    
+        const centerHorizontal = (height / 2) + sceneY
+        const centerVertical = (width / 2) + sceneX
+    
+        const sceneHeight = height + sceneY
+        const sceneWidth = width + sceneX
+    
+        const boundingbox = { id: "scene", width, height, x: sceneX, y: sceneY }
+
+        let vertical = [sceneY, centerVertical, sceneWidth].map(v => this.vector(boundingbox, v))
+        let horizontal = [sceneX, centerHorizontal, sceneHeight].map(v => this.vector(boundingbox, v))
+    
+
+        for (let guideItem of objects) {
+            if (skipShape && guideItem.id === skipShape.id) {
+                continue
+            }
+
+            let box = guideItem
+
+            vertical.push([box.x, box.x + box.width, box.x + box.width / 2].map(v => this.vector(box, v)))
+            horizontal.push([box.y, box.y + box.height, box.y + box.height / 2].map(v => this.vector(box, v)))
+        }
+    
+    
+        return {
+            vertical: vertical.flat(),
+            horizontal: horizontal.flat(),
+
+        }
+    }
+
+
+    getObjectSnappingEdges(node) {
+
+        let box = node.getClientRect()
+
+        let absPos = node.absolutePosition();
+
+        
+        return {
+            vertical: [
+                {
+                    guide: Math.round(box.x),
+                    offset: Math.round(absPos.x - box.x),
+                    snap: 'start',
+                    boundingbox: box,
+                },
+                {
+                    guide: Math.round(box.x + box.width / 2),
+                    offset: Math.round(absPos.x - box.x - box.width / 2),
+                    snap: 'center',
+                    boundingbox: box,
+                },
+                {
+                    guide: Math.round(box.x + box.width),
+                    offset: Math.round(absPos.x - box.x - box.width),
+                    snap: 'end',
+                    boundingbox: box,
+                },
+            ],
+            horizontal: [
+                {
+                    guide: Math.round(box.y),
+                    offset: Math.round(absPos.y - box.y),
+                    snap: 'start',
+                    boundingbox: box,
+                },
+                {
+                    guide: Math.round(box.y + box.height / 2),
+                    offset: Math.round(absPos.y - box.y - box.height / 2),
+                    snap: 'center',
+                    boundingbox: box,
+                },
+                {
+                    guide: Math.round(box.y + box.height),
+                    offset: Math.round(absPos.y - box.y - box.height),
+                    snap: 'end',
+                    boundingbox: box,
+                },
+            ],
+        }
+    }
+
+    getGuides(lineGuideStops, itemBounds, threshold=3) {
+        let resultV = []
+        let resultH = []
+    
+        lineGuideStops.vertical.forEach((guide, i) => {
+            itemBounds.vertical.forEach((itemBound) => {
+                let lineGuide = guide.v
+
+                let diff = Math.abs(lineGuide - itemBound.guide)
+    
+                if (diff < threshold) {
+                    resultV.push({
+                        lineGuide: lineGuide,
+                        diff: diff,
+                        snap: itemBound.snap,
+                        offset: itemBound.offset,
+                        box: itemBound.box,
+                        other: lineGuideStops,
+                        itemBound,
+                        guide
+    
+                    })
+                }
+            })
+        })
+    
+        lineGuideStops.horizontal.forEach((guide) => {
+            itemBounds.horizontal.forEach((itemBound) => {
+                let lineGuide = guide.v
+
+                let diff = Math.abs(lineGuide - itemBound.guide)
+    
+                if (diff < threshold) {
+                    resultH.push({
+                        lineGuide: lineGuide,
+                        diff: diff,
+                        snap: itemBound.snap,
+                        offset: itemBound.offset,
+                        box: itemBound.box,
+                        other: lineGuideStops,
+                        itemBound,
+                        guide
+                    })
+                }
+            })
+        })
+    
+        let guides = []
+    
+    
+        let verticalList = resultV.sort((a, b) => a.diff - b.diff)
+        let horizontalList = resultH.sort((a, b) => a.diff - b.diff)
+
+        let firstInVerticalList = verticalList[0]
+        let firstInHorizontalList = horizontalList[0]
+
+        // find the first snap start/center/end category in the list
+        let startV = verticalList.find(e => e.snap === "start")
+        let centerV = verticalList.find(e => e.snap === "center")
+        let endV = verticalList.find(e => e.snap === "end")
+        
+        let startH = horizontalList.find(e => e.snap === "start")
+        let centerH = horizontalList.find(e => e.snap === "center")
+        let endH = horizontalList.find(e => e.snap === "end")
+
+    
+
+        /**
+         * If list for example contains [center, end, start, end, end, center, start]
+         *                                              \____ snap start has priority in this example.
+         * 
+         * If list for example contains [center, center, center, end]
+         *                                                        \____ snap end has priority in this example.
+         * 
+         * If list for example contains [center, center, center, center]
+         *                                  \____ snap center has priority in this example.
+         */
+        let minV = startV // Always priorities snap start first 
+                    ? startV 
+                    : endV // then priorities snap end
+                        ? endV 
+                        : centerV // and last, priorities snap center
+                            ? centerV 
+                            : firstInVerticalList // fallback to first in list
+    
+        let minH = startH 
+                    ? startH 
+                    : endH 
+                        ? endH 
+                        : centerH 
+                            ? centerH 
+                            : firstInHorizontalList
+    
+
+
+                            
+        if (minV) {
+            guides.push({
+                lineGuide: minV.lineGuide,
+                offset: minV.offset,
+                orientation: 'V',
+                diff: minV.diff,
+                snap: minV.snap,
+                box: minV.box,
+                other: minV.other,
+                itemBound: minV.itemBound,
+                disabled: false
+            })
+        }
+    
+        if (minH) {
+            guides.push({
+                lineGuide: minH.lineGuide,
+                offset: minH.offset,
+                orientation: 'H',
+                snap: minH.snap,
+                diff: minH.diff,
+                box: minH.box,
+                other: minH.other,
+                itemBound: minH.itemBound,
+                disabled: false
+            })
+        }
+    
+    
+        return guides
+    }
+
+
+    getRelativeDistances(node, stage, guides) {
+        const relatives = stage.find('.object').reduce((distances, object, i, objects) => {
+          const nodeRect = node
+          const objectRect = object.getClientRect()
+      
+          let margin = 5 
+       
+          if(isOnLeftSide(getBoundingBoxes(nodeRect), getBoundingBoxes(objectRect), margin)) {
+            const item = { side: "l", ...objectRect, delta: Math.abs(nodeRect.x + nodeRect.width - objectRect.x) }
+            if(!distances["l"]) {
+              distances["l"] = item
+            } else {
+      
+              distances["l"] = smallestDistance(distances["l"], item)
+            }
+      
+          } else if(isOnRightSide(getBoundingBoxes(nodeRect), getBoundingBoxes(objectRect), margin)) {
+            const item = { side: "r", ...objectRect, delta: Math.abs(nodeRect.x + nodeRect.width - objectRect.x)}
+            
+      
+            if(!distances["r"]) {
+              distances["r"] = item
+            } else {
+              distances["r"] = smallestDistance(distances["r"], item)
+            }
+          } else if(isOnTopSide(getBoundingBoxes(nodeRect), getBoundingBoxes(objectRect), margin)) {
+            const item = { side: "t", ...objectRect, delta: Math.abs(objectRect.y + objectRect.height - nodeRect.y)}
+            if(!distances["t"]) {
+              distances["t"] = item
+            } else {
+              distances["t"] = smallestDistance(distances["t"], item)
+            }
+      
+          } else if(isOnBottomSide(getBoundingBoxes(nodeRect), getBoundingBoxes(objectRect), margin)) {
+            const item = { side: "b", ...objectRect, delta: Math.abs(nodeRect.y + nodeRect.height - objectRect.y)}
+            if(!distances["b"]) {
+              distances["b"] = item
+            } else {
+              distances["b"] = smallestDistance(distances["b"], item)
+            }
+      
+          }
+      
+          return distances
+        }, {})
+      
+        return relatives
+      }
+    
+
+
+
 }

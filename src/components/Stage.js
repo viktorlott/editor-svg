@@ -423,7 +423,7 @@ function ShapeSizeAttributes(props) {
             <NavButton onClick={alignObject("hcenter")} style={{padding: 9}}><HCenter size="20px"/></NavButton>
             <NavButton onClick={alignObject("hright")} style={{padding: 9}}><HRight size="20px"/></NavButton>
         </AttributeSection>
-        <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 10, flexFlow: "row"}}>
+        <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 10, marginBottom: 10, flexFlow: "row"}}>
             <NavButton onClick={alignObject("vtop")} style={{padding: 9}}><VTop  size="20px"/></NavButton>
             <NavButton onClick={alignObject("vcenter")} style={{padding: 9}}><VCenter size="20px"/></NavButton>
             <NavButton onClick={alignObject("vbottom")} style={{padding: 9}}><VBottom size="20px"/></NavButton>
