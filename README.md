@@ -3,27 +3,12 @@
 I built this project to learn about editors. End goal is to build a PDF-editor.
 
 #### My goal with this project.
-  - Build an editor
-  - Generate SVG from canvas
-  - Create a editor menu
+  - Build an editor - done
+  - Generate SVG from canvas - done
+  - Create a editor menu - done
 
 
-Built an editor with the library Konvajs. Purpose was to create a componentbuilder for the web. 
-This creates an svg to your clipboard.
-
-
-# Editor w/ Javascript
-
-I built this project to learn about editors. End goal is to build a PDF-editor.
-
-#### My goal with this project.
-  - Build an editor
-  - Generate SVG from canvas
-  - Create a editor menu
-
-
-Built an editor with the library Konvajs. Purpose was to create a componentbuilder for the web. 
-This creates an svg to your clipboard.
+Editor is built with the library Konvajs. The purpose of this project was to create a componentbuilder for the web. You can also generate svg code from the editor
 
 
 
