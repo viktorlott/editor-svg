@@ -1,9 +1,11 @@
 # Editor w/ Javascript
 
-This project was meant for learning purposes only.
+I built this project to learn about editors. End goal is to build a PDF-editor.
 
 #### My goal with this project.
   - Build an editor
+  - Generate SVG from canvas
+  - Create a editor menu
 
 
 Built an editor with the library Konvajs. Purpose was to create a componentbuilder for the web. 
