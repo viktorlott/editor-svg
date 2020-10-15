@@ -8,7 +8,8 @@ I built this project to learn about editors. End goal is to build a PDF-editor.
   - Create a editor menu - done
 
 
-Editor is built with the library Konvajs. The purpose of this project was to create a componentbuilder for the web. You can also generate svg code from the editor
+Editor is built with the library Konvajs. The purpose of this project was to create a componentbuilder for the web. 
+You can also generate svg code from the editor.
 
 
 
