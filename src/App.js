@@ -62,6 +62,8 @@ function App() {
   <KonvaContext.Provider value={{ store, setSelected, setMode }}>
 
       <DrawBoard/>
+
+      <div id="paper"></div>
     
   </KonvaContext.Provider>
   );

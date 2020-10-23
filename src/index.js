@@ -4,9 +4,21 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
+import Dropdown from 'react-dropdown';
+import 'react-dropdown/style.css';
+
+const options = [
+  'one', 'two', 'three'
+];
+const defaultOption = options[0];
+
+
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    {/* <App /> */}
+    <div style={{margin: 100}}>
+      <Dropdown options={options} onChange={() => {}} value={defaultOption} placeholder="Select an option" />;
+    </div>
   </React.StrictMode>,
   document.getElementById('root')
 );

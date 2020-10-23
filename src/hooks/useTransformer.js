@@ -182,6 +182,10 @@ const transformerProps = {
     // padding: shape.strokeWidth() / 2,
 }
 
+// transform.setAttr("borderStroke", "#0099ff" )
+// transform.setAttr("borderDash", [4, 6])
+
+
 function useTransformer(shape, layer, stage, attrs = {}) {
     const { store } = useContext(KonvaContext)
 
@@ -216,7 +220,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
         // shape.offset({x: 50, y: 50})
 
         layer.add(shape)
-        console.log(attrs)
+
         if(!attrs.disabled) {
             layer.add(transform)
     
@@ -228,7 +232,6 @@ function useTransformer(shape, layer, stage, attrs = {}) {
         }
 
         shape.on('mouseover', function (e) {
-
             if (!transform.getAttr("resizeEnabled") && !transform.getAttr("isDragging")) {
                 transform.setAttr("borderStroke", "#0099ff")
                 transform.setZIndex(layer.children.length)
@@ -237,8 +240,8 @@ function useTransformer(shape, layer, stage, attrs = {}) {
         })
 
         shape.on('mouseout', function (e) {
-
             if (!transform.getAttr("resizeEnabled")) {
+
                 transform.setAttr("borderStroke", "transparent")
                 layer.draw()
             }
@@ -254,6 +257,9 @@ function useTransformer(shape, layer, stage, attrs = {}) {
             transform.setAttr("isDragging", true)
             if(shape.className !== "Text") {
                 transform.resizeEnabled(false)
+            } else {
+                transform.setAttr("borderStroke", "#0099ff")
+                transform.setAttr("borderDash", [2, 2])
             }
         })
 
@@ -261,6 +267,7 @@ function useTransformer(shape, layer, stage, attrs = {}) {
             transform.setAttr("isDragging", false)
             transform.resizeEnabled(true)
             transform.setAttr("borderStroke", "#0099ff")
+            transform.setAttr("borderDash", [])
             transform.setZIndex(layer.children.length)
         })
 
@@ -268,6 +275,9 @@ function useTransformer(shape, layer, stage, attrs = {}) {
             if(shape.className !== "Text") {
                 transform.padding(shape.strokeWidth() / 2)
                 shape.strokeWidth(shape.strokeWidth())
+            } else {
+                transform.setAttr("borderStroke", "#0099ff")
+                transform.setAttr("borderDash", [2, 2])
             }
 
             if (e.target.className === "Transformer") {
@@ -369,6 +379,13 @@ function useTransformer(shape, layer, stage, attrs = {}) {
             if(shape.id() === store.selected) {
                 transform.setAttr("isDragging",true)
                 transform.setAttr("borderStroke", "transparent")
+                if(shape.className !== "Text") {
+                } else {
+                    // transform.setAttr("borderStroke", "#0099ff")
+                    // transform.setAttr("borderDash", [2, 2])
+                }
+
+                
             }
         })
         shape.on("dragmove.transform_resize", () => {
@@ -382,16 +399,18 @@ function useTransformer(shape, layer, stage, attrs = {}) {
                 transform.resizeEnabled(true)
                 transform.setAttr("isDragging",false)
                 transform.setAttr("borderStroke", "#0099ff" )
+                transform.setAttr("borderDash", [])
             }
         })
 
         return () => {
+            shape.off("dragstart.transform_resize")
             shape.off("dragmove.transform_resize")
             shape.off("dragend.transform_resize")
         }
 
 
-    }, [shape, store, hasChangedSelected])
+    }, [shape, store, hasChangedSelected, store.selected])
 
 
     return transform

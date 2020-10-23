@@ -332,14 +332,19 @@ function smallestDistance(a, b) {
   }
 
 
-class GuideLines {
+export class GuideLines {
 
     static get(node, objects, constraints, skipShape) {
         const guideLines = new GuideLines()
         const lineGuideStops = guideLines.getLineGuideStops(objects, constraints, skipShape)
         const itemBounds = guideLines.getObjectSnappingEdges(node)
         const guides = guideLines.getGuides(lineGuideStops, itemBounds, constraints.threshold)
-        return guides
+        const drawGuidePoints = guideLines.drawGuides(guides, {...constraints, x: constraints.offsetX, y: constraints.offsetY })
+
+        return {
+            guides,
+            drawGuidePoints
+        }
     }
 
     vector(object, vector) {
@@ -565,6 +570,17 @@ class GuideLines {
         return guides
     }
 
+    drawGuides(guides, sceneStage) {
+        const color = "#00EBFF" || '#0099ff'
+    
+        return guides.map((lg) => {
+            if (lg.orientation === 'H') {
+                return [sceneStage.x, lg.lineGuide, sceneStage.width + sceneStage.x, lg.lineGuide]
+            } else if (lg.orientation === 'V') {
+                return [lg.lineGuide, sceneStage.y, lg.lineGuide, sceneStage.height + sceneStage.y]
+            }
+        })
+    }
 
     getRelativeDistances(node, stage, guides) {
         const relatives = stage.find('.object').reduce((distances, object, i, objects) => {
@@ -578,7 +594,6 @@ class GuideLines {
             if(!distances["l"]) {
               distances["l"] = item
             } else {
-      
               distances["l"] = smallestDistance(distances["l"], item)
             }
       

@@ -219,6 +219,14 @@ export const Input = styled.input`
   &::-webkit-color-swatch {
     border-color: transparent;
   }
+  appearance: none;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  &::-webkit-color-swatch{
+    border: 0;
+    border-radius: 5px;
+  }
 
 
   font-size: 1rem;
@@ -268,6 +276,10 @@ export const FormWrapper = styled.div`
     justify-content: center;
     align-items: center;
     flex-flow: column;
+
+    & > div.block-picker {
+      margin-top: 5px;
+    }
 
     & > input[type="color"] {
       padding: 0;

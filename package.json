@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@svgdotjs/svg.draggable.js": "^3.0.2",
     "@svgdotjs/svg.js": "^3.0.16",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
@@ -11,14 +12,19 @@
     "canvg": "^3.0.6",
     "chaikin-smooth": "^1.0.4",
     "codemirror": "^5.58.1",
+    "fabric": "^4.2.0",
     "js-beautify": "^1.13.0",
     "konva": "^7.0.6",
+    "pdfassembler": "^0.1.0-beta.8",
     "pdfjs-dist": "^2.5.207",
     "react": "^16.13.1",
+    "react-color": "^2.18.1",
     "react-dom": "^16.13.1",
+    "react-dropdown": "^1.9.0",
     "react-input-color": "^3.0.1",
     "react-scripts": "3.4.3",
-    "styled-components": "^5.1.1"
+    "styled-components": "^5.1.1",
+    "svgson": "^4.1.0"
   },
   "scripts": {
     "start": "react-scripts start",

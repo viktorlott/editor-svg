@@ -13,6 +13,7 @@ import { width, height, offset } from '../utils/config'
 import CodeMirrorInput from './compact/Input' 
 import { SVG } from '@svgdotjs/svg.js'
 import {HCenter,HLeft,HRight,VBottom,VCenter,VTop } from './styles/alignIcons'
+import { SketchPicker, BlockPicker} from 'react-color';
 // PDF2SVG.from().then(console.log)
 
 function DisplayText(object, stage) {
@@ -38,6 +39,18 @@ function getSelectedObject(selected, stage) {
   return null
 }
 
+
+function ColorPickerForm(props) {
+  const { width, ...restProps} = props
+
+  return (
+    <FormWrapper>
+      <label style={{color: "#989898", margin: "0 5px"}} htmlFor="">{props.label}</label>
+      <div style={{ width, height: 20, background: props.color, borderRadius: 5, margin: "5px 5px 10px",  }}/>
+      <SketchPicker {...restProps} disableAlpha={true}  />
+    </FormWrapper>
+  )
+}
 
 function InputForm(props) {
   return (
@@ -141,6 +154,7 @@ function TextFormAttributes(props) {
           <OptionsForm onChange={onChangeFontWeight} label={"Text-tjocklek"} value={attrs.fontStyle} selected={"normal"} width={"150px"} data={optionsDataFontStyles} />
           <OptionsForm onChange={onChangeAlign} label="Text-justering" value={attrs.align}  selected={"left"} width={"150px"} data={optionsDataAlign} />
           <InputForm onChange={onChangeFontColor} value={attrs.fill} width={"150px"} height={"40px"} label={"Text färg"} type="color"/>
+          
     </AttributeSection>
   )
 }
@@ -168,8 +182,8 @@ function RectFormAttributes(props) {
     setAttrs(getRectAttrs(selectedObject))
   }, [selectedObject])
   
-  const onChangeRectColor = (e) => {
-    selectedObject.fill(e.target.value)
+  const onChangeRectColor = (color) => {
+    selectedObject.fill(color.target.value)
     selectedObject.parent.draw()
     updateAttrs()
   }
@@ -202,6 +216,7 @@ function RectFormAttributes(props) {
   return (
     <AttributeSection>
         <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 50, flexFlow: "row"}}>
+          {/* <ColorPickerForm onChangeComplete={onChangeRectColor} width={"75px"} height={"40px"} label={"Fyll"} color={attrs.fill} /> */}
           <InputForm onChange={onChangeRectColor} onClick={() => {}} value={attrs.fill} width={"75px"} height={"40px"} label={"Fyll"} type="color" colorFormat="rgba" />
           <InputForm onChange={onChangeRectBorderColor} value={attrs.stroke} width={"75px"} height={"40px"} label={"Kant"} type="color" colorFormat="rgba"/>
         </AttributeSection>
@@ -354,14 +369,14 @@ function ShapeSizeAttributes(props) {
 
   const onChangeX = useCallback((e) => {
     if(+e.target.value < -1) return
-    selectedObject.x(+e.target.value)
+    selectedObject.x(+e.target.value + 100)
     selectedObject.parent.draw()
     updateAttrs()
   },[selectedObject.id()])
 
   const onChangeY = useCallback((e) => {
     if(e.target.value < -1) return
-    selectedObject.y(+e.target.value)
+    selectedObject.y(+e.target.value + 100)
     selectedObject.parent.draw()
     updateAttrs()
   },[selectedObject.id()])
@@ -414,8 +429,8 @@ function ShapeSizeAttributes(props) {
           {!props.hideHeight && <InputForm onChange={onChangeHeight} value={Math.round(attrs.height)} width={"75px"} height={"40px"} style={{fontSize: "14px"}} label={"Höjd"} type="number"/>}
         </AttributeSection>
         <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 0, flexFlow: "row"}}>
-          <InputForm onChange={onChangeX} value={Math.round(attrs.x)} width={"75px"} height={"40px"} style={{fontSize: "14px"}} label={"X"} type="number"/>
-          <InputForm onChange={onChangeY} value={Math.round(attrs.y)} width={"75px"} height={"40px"} style={{fontSize: "14px"}} label={"Y"} type="number"/>
+          <InputForm onChange={onChangeX} value={Math.round(attrs.x) - 100} width={"75px"} height={"40px"} style={{fontSize: "14px"}} label={"X"} type="number"/>
+          <InputForm onChange={onChangeY} value={Math.round(attrs.y) - 100} width={"75px"} height={"40px"} style={{fontSize: "14px"}} label={"Y"} type="number"/>
         </AttributeSection>
 
         <AttributeSection style={{display: "flex", justifyContent: "center", marginTop: 20, flexFlow: "row"}}>
